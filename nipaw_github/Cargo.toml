@@ -1,0 +1,19 @@
+[package]
+name = "nipaw_github"
+version = "0.1.0"
+authors.workspace = true
+license.workspace = true
+readme.workspace = true
+homepage.workspace = true
+repository.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+async-trait.workspace = true
+reqwest.workspace = true
+reqwest-middleware.workspace = true
+http.workspace = true
+serde_json.workspace = true
+
+nipaw_core = { path = "../nipaw_core" }

@@ -1,0 +1,17 @@
+use thiserror::Error;
+
+#[derive(Debug, Error)]
+pub enum CoreError {
+	#[error("set token is empty")]
+	TokenEmpty,
+	#[error("request error: {0}")]
+	RequestError(#[from] reqwest::Error),
+	#[error("middleware error: {0}")]
+	MiddlewareError(#[from] reqwest_middleware::Error),
+	#[error("not found")]
+	NotFound,
+	#[error("unauthorized")]
+	Unauthorized,
+	#[error("rate limit")]
+	RateLimit,
+}

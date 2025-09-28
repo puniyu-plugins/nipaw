@@ -1,0 +1,27 @@
+[workspace]
+members = [
+    "nipaw_cnb",
+    "nipaw_core",
+    "nipaw_gitcode",
+    "nipaw_gitee",
+    "nipaw_github"
+]
+resolver = "2"
+exclude = ["nipaw_cli"]
+
+[workspace.package]
+authors = ["wuliya <3369906077@qq.com>"]
+license = "LGPL-3.0-only"
+readme = "README.md"
+homepage = "https://github.com/puniyu-plugins/nipaw"
+repository = "https://github.com/puniyu-plugins/nipaw"
+edition = "2024"
+rust-version = "1.88.0"
+
+[workspace.dependencies]
+reqwest = { version = "0.12.23", default-features = false, features = ["rustls-tls", "json"] }
+reqwest-middleware = { version = "0.4.2", features = ["rustls-tls"] }
+thiserror = "2.0.16"
+async-trait = "0.1.89"
+http = "1.3.1"
+serde_json = "1.0.145"

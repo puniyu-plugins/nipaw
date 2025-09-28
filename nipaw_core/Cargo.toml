@@ -1,0 +1,18 @@
+[package]
+name = "nipaw_core"
+version = "0.1.0"
+authors.workspace = true
+license.workspace = true
+readme.workspace = true
+homepage.workspace = true
+repository.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+async-trait.workspace = true
+thiserror.workspace = true
+reqwest.workspace = true
+reqwest-middleware.workspace = true
+
+serde = { version = "1.0.228", features = ["derive"] }
