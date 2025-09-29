@@ -75,4 +75,16 @@ impl Client for GitHubClient {
 		let repo_info: Value = resp.json().await?;
 		Ok(make_repo_info(repo_info))
 	}
+
+	async fn get_default_branch(&self, repo_path: (&str, &str)) -> Result<String, CoreError> {
+		let url = format!("{}/repos/{}/{}", API_URL, repo_path.0, repo_path.1);
+		let mut request = HTTP_CLIENT.get(url);
+		if let Some(token) = &self.token {
+			request = request.header("Authorization", format!("Bearer {}", token));
+		}
+		let resp = request.send().await?;
+		let repo_info: Value = resp.json().await?;
+		let default_branch = repo_info["default_branch"].as_str().unwrap().to_string();
+		Ok(default_branch)
+	}
 }

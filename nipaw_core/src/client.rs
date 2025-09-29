@@ -40,5 +40,13 @@ pub trait Client: Send + Sync {
 	/// * `user_name` - 用户名
 	async fn get_user_info_with_name(&self, user_name: &str) -> Result<UserInfo, CoreError>;
 
+	/// 获取仓库信息
+	///
+	/// # 参数
+	///
+	/// * `repo_path` - 仓库路径，格式为 `(owner, repo)`
+	///
 	async fn get_repo_info(&self, repo_path: (&str, &str)) -> Result<RepoInfo, CoreError>;
+
+	async fn get_default_branch(&self, repo_path: (&str, &str)) -> Result<String, CoreError>;
 }

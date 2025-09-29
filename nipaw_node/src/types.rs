@@ -1,2 +1,2 @@
-pub(crate) mod user;
 pub(crate) mod repo;
+pub(crate) mod user;

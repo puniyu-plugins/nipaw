@@ -55,4 +55,14 @@ impl GitCodeClient {
 			.map_err(|e| napi::Error::from_reason(format!("{:?}", e)))?;
 		Ok(make_repo_info(repo_info))
 	}
+
+	#[napi]
+	pub async fn get_default_repo_info(&self, owner: String, repo: String) -> napi::Result<String> {
+		let client = GITCODE_CLIENT.read().await;
+		let default_branch = client
+			.get_default_branch((owner.as_str(), repo.as_str()))
+			.await
+			.map_err(|e| napi::Error::from_reason(format!("{:?}", e)))?;
+		Ok(default_branch)
+	}
 }
