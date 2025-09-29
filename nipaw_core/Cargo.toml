@@ -14,5 +14,6 @@ async-trait.workspace = true
 thiserror.workspace = true
 reqwest.workspace = true
 reqwest-middleware.workspace = true
+chrono.workspace = true
 
 serde = { version = "1.0.228", features = ["derive"] }
