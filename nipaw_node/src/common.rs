@@ -1,5 +1,6 @@
 use crate::types::repo::RepoInfo;
 use crate::types::user::UserInfo;
+use std::sync::{LazyLock, Mutex};
 
 pub fn make_user_info(user_info: nipaw_core::types::user::UserInfo) -> UserInfo {
 	UserInfo {
@@ -25,3 +26,6 @@ pub fn make_repo_info(repo_info: nipaw_core::types::repo::RepoInfo) -> RepoInfo 
 		pushed_at: repo_info.pushed_at,
 	}
 }
+
+pub(crate) static RT_RUNTIME: LazyLock<Mutex<tokio::runtime::Runtime>> =
+	LazyLock::new(|| Mutex::new(tokio::runtime::Runtime::new().unwrap()));

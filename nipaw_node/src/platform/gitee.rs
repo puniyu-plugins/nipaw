@@ -1,4 +1,4 @@
-use crate::common::{make_repo_info, make_user_info};
+use crate::common::{make_repo_info, make_user_info, RT_RUNTIME};
 use crate::types::{repo::RepoInfo, user::UserInfo};
 use napi::tokio::sync::RwLock;
 use napi_derive::napi;
@@ -16,7 +16,7 @@ pub struct GiteeClient;
 impl GiteeClient {
 	#[napi]
 	pub fn set_token(&mut self, token: String) -> napi::Result<()> {
-		let rt = tokio::runtime::Runtime::new()?;
+		let rt = RT_RUNTIME.lock().unwrap();
 		rt.block_on(async {
 			let mut client = GITEE_CLIENT.write().await;
 			client
