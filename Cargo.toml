@@ -4,12 +4,14 @@ members = [
     "nipaw_core",
     "nipaw_gitcode",
     "nipaw_gitee",
-    "nipaw_github"
+    "nipaw_github",
+    "nipaw_node"
 ]
 resolver = "2"
 exclude = ["nipaw_cli"]
 
 [workspace.package]
+version = "0.1.0"
 authors = ["wuliya <3369906077@qq.com>"]
 license = "LGPL-3.0-only"
 readme = "README.md"
@@ -26,3 +28,8 @@ thiserror = "2.0.16"
 async-trait = "0.1.89"
 http = "1.3.1"
 serde_json = "1.0.145"
+
+
+[profile.release]
+lto = true
+strip = "symbols"
