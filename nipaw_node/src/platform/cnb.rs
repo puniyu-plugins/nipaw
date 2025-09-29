@@ -15,12 +15,24 @@ pub struct CnbClient;
 #[napi]
 impl CnbClient {
 	#[napi]
-	pub fn set_token(&mut self, token: String) -> napi::Result<()> {
+	pub fn set_token(&self, token: String) -> napi::Result<()> {
 		let rt = RT_RUNTIME.lock().unwrap();
 		rt.block_on(async {
 			let mut client = CNB_CLIENT.write().await;
 			client
 				.set_token(token.as_str())
+				.map_err(|e| napi::Error::from_reason(format!("{:?}", e)))?;
+			Ok(())
+		})
+	}
+	
+	#[napi]
+	pub fn set_proxy(&self, proxy: String) -> napi::Result<()> {
+		let rt = RT_RUNTIME.lock().unwrap();
+		rt.block_on(async {
+			let mut client = CNB_CLIENT.write().await;
+			client
+				.set_proxy(proxy.as_str())
 				.map_err(|e| napi::Error::from_reason(format!("{:?}", e)))?;
 			Ok(())
 		})

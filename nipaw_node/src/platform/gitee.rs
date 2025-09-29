@@ -15,7 +15,7 @@ pub struct GiteeClient;
 #[napi]
 impl GiteeClient {
 	#[napi]
-	pub fn set_token(&mut self, token: String) -> napi::Result<()> {
+	pub fn set_token(&self, token: String) -> napi::Result<()> {
 		let rt = RT_RUNTIME.lock().unwrap();
 		rt.block_on(async {
 			let mut client = GITEE_CLIENT.write().await;
@@ -26,6 +26,17 @@ impl GiteeClient {
 		})
 	}
 
+	#[napi]
+	pub fn set_proxy(&self, proxy: String) -> napi::Result<()> {
+		let rt = RT_RUNTIME.lock().unwrap();
+		rt.block_on(async {
+			let mut client = GITEE_CLIENT.write().await;
+			client
+				.set_proxy(proxy.as_str())
+				.map_err(|e| napi::Error::from_reason(format!("{:?}", e)))?;
+			Ok(())
+		})
+	}
 	#[napi]
 	pub async fn get_user_info(&self) -> napi::Result<UserInfo> {
 		let client = GITEE_CLIENT.read().await;
