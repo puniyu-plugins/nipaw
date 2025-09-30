@@ -17,9 +17,9 @@ crate-type = ["cdylib"]
 [dependencies]
 napi = { version = "3.0.0", features = ["chrono_date", "async"] }
 napi-derive = "3.0.0"
-serde = { version = "1.0.228", features = ["derive"] }
 tokio = "1.47.1"
-chrono = "0.4.42"
+serde.workspace = true
+chrono.workspace = true
 
 nipaw_core = { path = "../nipaw_core" }
 nipaw_github = { path = "../nipaw_github" }

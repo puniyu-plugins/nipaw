@@ -2,15 +2,18 @@ mod client;
 mod common;
 mod middleware;
 
-use crate::client::{HTTP_CLIENT, PROXY_URL};
-use crate::common::{make_repo_info, make_user_info};
+use crate::{
+	client::{HTTP_CLIENT, PROXY_URL},
+	common::JsonValue,
+};
 use async_trait::async_trait;
 pub use nipaw_core::Client;
-use nipaw_core::CoreError;
-use nipaw_core::types::user::UserInfo;
+use nipaw_core::{
+	CoreError,
+	types::{repo::RepoInfo, user::UserInfo},
+};
 use serde_json::Value;
 use std::collections::HashMap;
-use nipaw_core::types::repo::RepoInfo;
 
 static API_URL: &str = "https://api.gitcode.com/api/v5";
 static BASE_URL: &str = "https://gitcode.com";
@@ -42,7 +45,6 @@ impl Client for GitCodeClient {
 		Ok(())
 	}
 
-	#[inline]
 	async fn get_user_info(&self) -> Result<UserInfo, CoreError> {
 		if self.token.is_none() {
 			return Err(CoreError::TokenEmpty);
@@ -51,11 +53,10 @@ impl Client for GitCodeClient {
 		let request =
 			HTTP_CLIENT.get(url).query(&[("access_token", self.token.as_ref().unwrap().as_str())]);
 		let resp = request.send().await?;
-		let user_info: Value = resp.json().await?;
-		Ok(make_user_info(user_info))
+		let user_info: JsonValue = resp.json().await?;
+		Ok(user_info.into())
 	}
 
-	#[inline]
 	async fn get_user_info_with_name(&self, user_name: &str) -> Result<UserInfo, CoreError> {
 		let url = format!("{}/users/{}", API_URL, user_name);
 		let mut request = HTTP_CLIENT.get(url);
@@ -65,11 +66,10 @@ impl Client for GitCodeClient {
 			request = request.query(&params);
 		}
 		let resp = request.send().await?;
-		let user_info: Value = resp.json().await?;
-		Ok(make_user_info(user_info))
+		let user_info: JsonValue = resp.json().await?;
+		Ok(user_info.into())
 	}
 
-	#[inline]
 	async fn get_repo_info(&self, repo_path: (&str, &str)) -> Result<RepoInfo, CoreError> {
 		let url = format!("{}/repos/{}/{}", API_URL, repo_path.0, repo_path.1);
 		let mut request = HTTP_CLIENT.get(url);
@@ -79,8 +79,8 @@ impl Client for GitCodeClient {
 			request = request.query(&params);
 		}
 		let resp = request.send().await?;
-		let repo_info: Value = resp.json().await?;
-		Ok(make_repo_info(repo_info))
+		let repo_info: JsonValue = resp.json().await?;
+		Ok(repo_info.into())
 	}
 
 	async fn get_default_branch(&self, repo_path: (&str, &str)) -> Result<String, CoreError> {
@@ -98,10 +98,10 @@ impl Client for GitCodeClient {
 	}
 }
 
-async fn get_user_avatar_url(user_name: &str) -> Result<String, CoreError>{
+async fn get_user_avatar_url(user_name: &str) -> Result<String, CoreError> {
 	let url = format!("{}/uc/api/v1/user/setting/profile?username={}", WEB_API_URL, user_name);
 	let resp = HTTP_CLIENT.get(url).header("Referer", BASE_URL).send().await?;
 	let user_info: Value = resp.json().await?;
-	let avatar_url = user_info["avatar"].as_str().unwrap().to_string();
+	let avatar_url = user_info.get("avatar").and_then(|v| v.as_str()).unwrap().to_string();
 	Ok(avatar_url)
 }

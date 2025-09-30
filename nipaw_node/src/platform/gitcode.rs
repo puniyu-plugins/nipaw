@@ -1,4 +1,4 @@
-use crate::common::{make_repo_info, make_user_info, RT_RUNTIME};
+use crate::common::RT_RUNTIME;
 use crate::types::{repo::RepoInfo, user::UserInfo};
 use napi::tokio::sync::RwLock;
 use napi_derive::napi;
@@ -44,7 +44,7 @@ impl GitCodeClient {
 			.get_user_info()
 			.await
 			.map_err(|e| napi::Error::from_reason(format!("{:?}", e)))?;
-		Ok(make_user_info(user_info))
+		Ok(user_info.into())
 	}
 
 	#[napi]
@@ -54,7 +54,7 @@ impl GitCodeClient {
 			.get_user_info_with_name(name.as_str())
 			.await
 			.map_err(|e| napi::Error::from_reason(format!("{:?}", e)))?;
-		Ok(make_user_info(user_info))
+		Ok(user_info.into())
 	}
 
 	#[napi]
@@ -64,7 +64,7 @@ impl GitCodeClient {
 			.get_repo_info((owner.as_str(), repo.as_str()))
 			.await
 			.map_err(|e| napi::Error::from_reason(format!("{:?}", e)))?;
-		Ok(make_repo_info(repo_info))
+		Ok(repo_info.into())
 	}
 
 	#[napi]

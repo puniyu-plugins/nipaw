@@ -2,14 +2,17 @@ mod client;
 mod common;
 mod middleware;
 
-use crate::client::{HTTP_CLIENT, PROXY_URL};
-use crate::common::{make_repo_info, make_user_info};
+use crate::{
+	client::{HTTP_CLIENT, PROXY_URL},
+	common::JsonValue,
+};
 use async_trait::async_trait;
 pub use nipaw_core::Client;
-use nipaw_core::CoreError;
-use nipaw_core::types::user::UserInfo;
+use nipaw_core::{
+	CoreError,
+	types::{repo::RepoInfo, user::UserInfo},
+};
 use serde_json::Value;
-use nipaw_core::types::repo::RepoInfo;
 
 static BASE_URL: &str = "https://cnb.cool";
 static API_URL: &str = "https://api.cnb.cool";
@@ -40,7 +43,6 @@ impl Client for CnbClient {
 		Ok(())
 	}
 
-	#[inline]
 	async fn get_user_info(&self) -> Result<UserInfo, CoreError> {
 		if self.token.is_none() {
 			return Err(CoreError::TokenEmpty);
@@ -50,11 +52,10 @@ impl Client for CnbClient {
 			.get(url)
 			.header("Authorization", format!("Bearer {}", self.token.as_ref().unwrap()));
 		let resp = request.send().await?;
-		let user_info: Value = resp.json().await?;
-		Ok(make_user_info(user_info))
+		let user_info: JsonValue = resp.json().await?;
+		Ok(user_info.into())
 	}
 
-	#[inline]
 	async fn get_user_info_with_name(&self, user_name: &str) -> Result<UserInfo, CoreError> {
 		let url = format!("{}/users/{}", API_URL, user_name);
 		let mut request = HTTP_CLIENT.get(url);
@@ -62,11 +63,10 @@ impl Client for CnbClient {
 			request = request.header("Authorization", format!("Bearer {}", token));
 		}
 		let resp = request.send().await?;
-		let user_info: Value = resp.json().await?;
-		Ok(make_user_info(user_info))
+		let user_info: JsonValue = resp.json().await?;
+		Ok(user_info.into())
 	}
 
-	#[inline]
 	async fn get_repo_info(&self, repo_path: (&str, &str)) -> Result<RepoInfo, CoreError> {
 		let url = format!("{}/repos/{}/{}", API_URL, repo_path.0, repo_path.1);
 		let mut request = HTTP_CLIENT.get(url);
@@ -74,8 +74,8 @@ impl Client for CnbClient {
 			request = request.header("Authorization", format!("Bearer {}", token));
 		}
 		let resp = request.send().await?;
-		let repo_info: Value = resp.json().await?;
-		Ok(make_repo_info(repo_info))
+		let repo_info: JsonValue = resp.json().await?;
+		Ok(repo_info.into())
 	}
 
 	async fn get_default_branch(&self, repo_path: (&str, &str)) -> Result<String, CoreError> {
@@ -86,7 +86,7 @@ impl Client for CnbClient {
 		}
 		let resp = request.send().await?;
 		let repo_info: Value = resp.json().await?;
-		let default_branch = repo_info["name"].as_str().unwrap().to_string();
+		let default_branch = repo_info.get("name").and_then(|v| v.as_str()).unwrap().to_string();
 		Ok(default_branch)
 	}
 }

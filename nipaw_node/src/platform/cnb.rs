@@ -1,4 +1,4 @@
-use crate::common::{make_repo_info, make_user_info, RT_RUNTIME};
+use crate::common::RT_RUNTIME;
 use crate::types::{repo::RepoInfo, user::UserInfo};
 use napi::tokio::sync::RwLock;
 use napi_derive::napi;
@@ -25,7 +25,7 @@ impl CnbClient {
 			Ok(())
 		})
 	}
-	
+
 	#[napi]
 	pub fn set_proxy(&self, proxy: String) -> napi::Result<()> {
 		let rt = RT_RUNTIME.lock().unwrap();
@@ -45,7 +45,7 @@ impl CnbClient {
 			.get_user_info()
 			.await
 			.map_err(|e| napi::Error::from_reason(format!("{:?}", e)))?;
-		Ok(make_user_info(user_info))
+		Ok(user_info.into())
 	}
 	#[napi]
 	pub async fn get_user_info_with_name(&self, name: String) -> napi::Result<UserInfo> {
@@ -54,7 +54,7 @@ impl CnbClient {
 			.get_user_info_with_name(name.as_str())
 			.await
 			.map_err(|e| napi::Error::from_reason(format!("{:?}", e)))?;
-		Ok(make_user_info(user_info))
+		Ok(user_info.into())
 	}
 
 	#[napi]
@@ -64,7 +64,7 @@ impl CnbClient {
 			.get_repo_info((owner.as_str(), repo.as_str()))
 			.await
 			.map_err(|e| napi::Error::from_reason(format!("{:?}", e)))?;
-		Ok(make_repo_info(repo_info))
+		Ok(repo_info.into())
 	}
 
 	#[napi]

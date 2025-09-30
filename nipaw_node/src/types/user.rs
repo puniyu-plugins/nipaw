@@ -19,3 +19,17 @@ pub struct UserInfo {
 	/// 关注的用户数量
 	pub following: u32,
 }
+
+impl From<nipaw_core::types::user::UserInfo> for UserInfo {
+	fn from(user_info: nipaw_core::types::user::UserInfo) -> Self {
+		UserInfo {
+			id: user_info.id,
+			login: user_info.login,
+			name: user_info.name,
+			avatar_url: user_info.avatar_url,
+			email: user_info.email,
+			followers: user_info.followers as u32,
+			following: user_info.following as u32,
+		}
+	}
+}

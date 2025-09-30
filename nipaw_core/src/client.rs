@@ -1,10 +1,9 @@
 use crate::error::CoreError;
-use crate::types::{user::UserInfo, repo::RepoInfo};
+use crate::types::{repo::RepoInfo, user::UserInfo};
 use async_trait::async_trait;
 
 #[async_trait]
 pub trait Client: Send + Sync {
-
 	/// 设置token
 	///
 	/// # 参数

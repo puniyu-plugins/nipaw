@@ -1,7 +1,6 @@
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 
-
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct RepoInfo {
 	/// 仓库id

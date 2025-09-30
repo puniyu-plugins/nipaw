@@ -22,3 +22,18 @@ pub struct RepoInfo {
 	/// 仓库推送时间
 	pub pushed_at: DateTime<Utc>,
 }
+
+impl From<nipaw_core::types::repo::RepoInfo> for RepoInfo {
+	fn from(repo_info: nipaw_core::types::repo::RepoInfo) -> Self {
+		RepoInfo {
+			id: repo_info.id,
+			owner: repo_info.owner,
+			name: repo_info.name,
+			full_name: repo_info.full_name,
+			description: repo_info.description,
+			created_at: repo_info.created_at,
+			updated_at: repo_info.updated_at,
+			pushed_at: repo_info.pushed_at,
+		}
+	}
+}
