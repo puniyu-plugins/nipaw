@@ -24,6 +24,6 @@ pub fn make_repo_info(repo_info: Value) -> RepoInfo {
 		description: repo_info["description"].as_str().map(|s| s.to_string()),
 		created_at: repo_info["created_at"].as_str().unwrap().to_string().parse().unwrap(),
 		updated_at: repo_info["updated_at"].as_str().unwrap().to_string().parse().unwrap(),
-		pushed_at: repo_info["pushed_at"].as_str().unwrap().to_string().parse().unwrap(),
+		pushed_at: repo_info["updated_at"].as_str().unwrap().to_string().parse().unwrap(),
 	}
 }

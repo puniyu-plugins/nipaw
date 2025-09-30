@@ -73,7 +73,7 @@ impl GitHubClient {
 	}
 
 	#[napi]
-	pub async fn get_default_repo_info(&self, owner: String, repo: String) -> napi::Result<String> {
+	pub async fn get_default_branch(&self, owner: String, repo: String) -> napi::Result<String> {
 		let client = GITHUB_CLIENT.read().await;
 		let default_branch = client
 			.get_default_branch((owner.as_str(), repo.as_str()))

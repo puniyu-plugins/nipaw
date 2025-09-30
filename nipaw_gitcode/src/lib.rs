@@ -13,6 +13,8 @@ use std::collections::HashMap;
 use nipaw_core::types::repo::RepoInfo;
 
 static API_URL: &str = "https://api.gitcode.com/api/v5";
+static BASE_URL: &str = "https://gitcode.com";
+static WEB_API_URL: &str = "https://web-api.gitcode.com";
 
 #[derive(Debug, Default)]
 pub struct GitCodeClient {
@@ -94,4 +96,12 @@ impl Client for GitCodeClient {
 		let default_branch = repo_info["default_branch"].as_str().unwrap().to_string();
 		Ok(default_branch)
 	}
+}
+
+async fn get_user_avatar_url(user_name: &str) -> Result<String, CoreError>{
+	let url = format!("{}/uc/api/v1/user/setting/profile?username={}", WEB_API_URL, user_name);
+	let resp = HTTP_CLIENT.get(url).header("Referer", BASE_URL).send().await?;
+	let user_info: Value = resp.json().await?;
+	let avatar_url = user_info["avatar"].as_str().unwrap().to_string();
+	Ok(avatar_url)
 }
