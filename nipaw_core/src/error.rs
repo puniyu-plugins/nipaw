@@ -8,6 +8,8 @@ pub enum CoreError {
 	RequestError(#[from] reqwest::Error),
 	#[error("middleware error: {0}")]
 	MiddlewareError(#[from] reqwest_middleware::Error),
+	#[error("url parse error: {0}")]
+	URLParseError(#[from] url::ParseError),
 	#[error("not found")]
 	NotFound,
 	#[error("unauthorized")]

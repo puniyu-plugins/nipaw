@@ -16,3 +16,5 @@ reqwest.workspace = true
 reqwest-middleware.workspace = true
 chrono.workspace = true
 serde.workspace = true
+
+url = "2.5.7"

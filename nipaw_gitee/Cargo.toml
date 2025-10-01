@@ -14,7 +14,12 @@ async-trait.workspace = true
 reqwest.workspace = true
 reqwest-middleware.workspace = true
 http.workspace = true
+itertools.workspace = true
 serde.workspace = true
 serde_json.workspace = true
+chrono.workspace = true
+
+scraper = "0.24.0"
 
 nipaw_core = { path = "../nipaw_core" }
+

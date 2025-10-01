@@ -1,19 +1,23 @@
-use crate::BASE_URL;
-use nipaw_core::types::{repo::RepoInfo, user::UserInfo};
+use chrono::{NaiveDate, Utc, Weekday};
+use itertools::Itertools;
+use nipaw_core::types::{
+	repo::RepoInfo,
+	user::{ContributionData, ContributionResult, UserInfo},
+};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
 #[derive(Serialize, Deserialize)]
-pub struct JsonValue(Value);
+pub struct JsonValue(pub(crate) Value);
 impl From<JsonValue> for UserInfo {
 	fn from(json_value: JsonValue) -> Self {
 		let user_info = json_value.0;
-		let login = user_info.get("nickname").and_then(|v| v.as_str()).unwrap();
+		let login = user_info.get("username").and_then(|v| v.as_str()).unwrap();
 		UserInfo {
 			id: user_info.get("id").and_then(|v| v.as_str()).unwrap().to_string(),
 			login: login.to_string(),
 			name: user_info.get("nickname").and_then(|v| v.as_str()).unwrap().to_string(),
-			avatar_url: format!("{}/users/{}/avatar/l", BASE_URL, login),
+			avatar_url: user_info.get("avatar_url").and_then(|v| v.as_str()).unwrap().to_string(),
 			email: user_info.get("email").and_then(|v| v.as_str()).map(|s| s.to_string()),
 			followers: user_info.get("follower_count").and_then(|v| v.as_u64()).unwrap(),
 			following: user_info.get("follow_count").and_then(|v| v.as_u64()).unwrap(),
@@ -34,5 +38,39 @@ impl From<JsonValue> for RepoInfo {
 			updated_at: repo_info["updated_at"].as_str().unwrap().to_string().parse().unwrap(),
 			pushed_at: repo_info["updated_at"].as_str().unwrap().to_string().parse().unwrap(),
 		}
+	}
+}
+
+impl From<JsonValue> for ContributionResult {
+	fn from(value: JsonValue) -> Self {
+		let contribution_result = value.0;
+
+		let contributions: Vec<Vec<ContributionData>> = contribution_result
+			.as_object()
+			.unwrap()
+			.iter()
+			.map(|(date_str, data)| {
+				let date = NaiveDate::parse_from_str(date_str, "%Y%m%d")
+					.unwrap()
+					.and_hms_opt(0, 0, 0)
+					.unwrap()
+					.and_local_timezone(Utc)
+					.unwrap();
+				let count = data.get("score").and_then(|v| v.as_u64()).unwrap_or(0) as u32;
+
+				ContributionData { date, count }
+			})
+			.sorted_by_key(|c| c.date)
+			.chunk_by(|c| {
+				let naive_date = c.date.naive_utc().date();
+				naive_date.week(Weekday::Mon)
+			})
+			.into_iter()
+			.map(|(_, week_data)| week_data.collect::<Vec<_>>())
+			.collect();
+
+		let total = contributions.iter().flatten().map(|c| c.count).sum();
+
+		ContributionResult { total, contributions }
 	}
 }

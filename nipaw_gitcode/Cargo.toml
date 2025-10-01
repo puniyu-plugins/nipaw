@@ -16,5 +16,7 @@ reqwest-middleware.workspace = true
 http.workspace = true
 serde.workspace = true
 serde_json.workspace = true
+itertools.workspace = true
+chrono.workspace = true
 
 nipaw_core = { path = "../nipaw_core" }

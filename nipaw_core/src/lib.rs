@@ -3,4 +3,5 @@ mod error;
 
 pub use client::Client;
 pub use error::CoreError;
+pub mod option;
 pub mod types;

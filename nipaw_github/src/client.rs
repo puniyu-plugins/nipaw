@@ -8,14 +8,8 @@ use std::sync::{LazyLock, OnceLock};
 
 pub(crate) static HTTP_CLIENT: LazyLock<ClientWithMiddleware> = LazyLock::new(|| {
 	let mut headers = HeaderMap::new();
-	headers.insert(
-		HeaderName::from_static("x-github-api-version"),
-		HeaderValue::from_static("2022-11-28"),
-	);
-	headers.insert(
-		HeaderName::from_static("accept"),
-		HeaderValue::from_static("application/vnd.github+json"),
-	);
+	headers.insert(HeaderName::from_static("x-github-api-version"), HeaderValue::from_static("2022-11-28"));
+	headers.insert(HeaderName::from_static("accept"), HeaderValue::from_static("application/vnd.github+json"));
 	headers.insert(HeaderName::from_static("user-agent"), HeaderValue::from_static("nipaw"));
 
 	let proxy_url = PROXY_URL.get();

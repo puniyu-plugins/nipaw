@@ -2,19 +2,25 @@ mod client;
 mod common;
 mod middleware;
 
+use crate::common::ContributionHtml;
 use crate::{
 	client::{HTTP_CLIENT, PROXY_URL},
 	common::JsonValue,
 };
 use async_trait::async_trait;
 pub use nipaw_core::Client;
+use nipaw_core::option::ReposListOptions;
+use nipaw_core::types::user::ContributionResult;
 use nipaw_core::{
 	CoreError,
 	types::{repo::RepoInfo, user::UserInfo},
 };
+use reqwest::Url;
 use serde_json::Value;
+use std::collections::HashMap;
 
 static API_URL: &str = "https://api.github.com";
+static BASE_URL: &str = "https://github.com";
 #[derive(Debug, Default)]
 pub struct GitHubClient {
 	pub token: Option<String>,
@@ -46,31 +52,42 @@ impl Client for GitHubClient {
 			return Err(CoreError::TokenEmpty);
 		}
 		let url = format!("{}/user", API_URL);
-		let request = HTTP_CLIENT
-			.get(url)
-			.header("Authorization", format!("Bearer {}", self.token.as_ref().unwrap()));
+		let request = HTTP_CLIENT.get(url).bearer_auth(self.token.as_ref().unwrap());
 		let resp = request.send().await?;
 		let user_info: JsonValue = resp.json().await?;
 		Ok(user_info.into())
 	}
 
-
 	async fn get_user_info_with_name(&self, user_name: &str) -> Result<UserInfo, CoreError> {
 		let url = format!("{}/users/{}", API_URL, user_name);
 		let mut request = HTTP_CLIENT.get(url);
 		if let Some(token) = &self.token {
-			request = request.header("Authorization", format!("Bearer {}", token));
+			request = request.bearer_auth(token);
 		}
 		let resp = request.send().await?;
 		let user_info: JsonValue = resp.json().await?;
 		Ok(user_info.into())
 	}
 
+	async fn get_user_contribution(&self, user_name: &str) -> Result<ContributionResult, CoreError> {
+		let mut url = Url::parse(&format!("{}/{}", BASE_URL, user_name))?;
+		url.query_pairs_mut()
+			.append_pair("action", "show")
+			.append_pair("controller", "profiles")
+			.append_pair("tab", "contributions")
+			.append_pair("user_id", user_name);
+
+		let request = HTTP_CLIENT.get(url).header("X-Requested-With", "XMLHttpRequest").header("Accept", "text/html");
+		let resp = request.send().await?;
+		let html: ContributionHtml = resp.text().await?.into();
+		Ok(html.into())
+	}
+
 	async fn get_repo_info(&self, repo_path: (&str, &str)) -> Result<RepoInfo, CoreError> {
 		let url = format!("{}/repos/{}/{}", API_URL, repo_path.0, repo_path.1);
 		let mut request = HTTP_CLIENT.get(url);
 		if let Some(token) = &self.token {
-			request = request.header("Authorization", format!("Bearer {}", token));
+			request = request.bearer_auth(token);
 		}
 		let resp = request.send().await?;
 		let repo_info: JsonValue = resp.json().await?;
@@ -81,11 +98,54 @@ impl Client for GitHubClient {
 		let url = format!("{}/repos/{}/{}", API_URL, repo_path.0, repo_path.1);
 		let mut request = HTTP_CLIENT.get(url);
 		if let Some(token) = &self.token {
-			request = request.header("Authorization", format!("Bearer {}", token));
+			request = request.bearer_auth(token);
 		}
 		let resp = request.send().await?;
 		let repo_info: Value = resp.json().await?;
-		let default_branch = repo_info["default_branch"].as_str().unwrap().to_string();
+		let default_branch = repo_info.get("default_branch").and_then(|v| v.as_str()).unwrap().to_string();
 		Ok(default_branch)
+	}
+
+	async fn get_user_repos(&self, option: Option<ReposListOptions>) -> Result<Vec<RepoInfo>, CoreError> {
+		let url = format!("{}/user/repos", API_URL);
+		let mut request = HTTP_CLIENT.get(url);
+		let mut params: HashMap<&str, String> = HashMap::new();
+		if let Some(token) = &self.token {
+			request = request.bearer_auth(token);
+		}
+
+		params.insert("type", "owner".to_string());
+		params.insert("sort", "pushed".to_string());
+
+		if let Some(option) = option {
+			let per_page = option.per_page.unwrap_or_default().min(100);
+			params.insert("per_page", per_page.to_string());
+			let page = option.page.unwrap_or_default();
+			params.insert("page", page.to_string());
+		}
+		let resp = request.query(&params).send().await?;
+		let repo_infos: Vec<JsonValue> = resp.json().await?;
+		Ok(repo_infos.into_iter().map(|v| v.into()).collect())
+	}
+
+	async fn get_user_repos_with_name(&self, user_name: &str, option: Option<ReposListOptions>) -> Result<Vec<RepoInfo>, CoreError> {
+		let url = format!("{}/users/{}/repos", API_URL, user_name);
+		let mut request = HTTP_CLIENT.get(url);
+		let mut params: HashMap<&str, String> = HashMap::new();
+		if let Some(token) = &self.token {
+			request = request.bearer_auth(token);
+		}
+		params.insert("type", "owner".to_string());
+		params.insert("sort", "pushed".to_string());
+
+		if let Some(option) = option {
+			let per_page = option.per_page.unwrap_or_default().min(100);
+			params.insert("per_page", per_page.to_string());
+			let page = option.page.unwrap_or_default();
+			params.insert("page", page.to_string());
+		}
+		let resp = request.query(&params).send().await?;
+		let repo_infos: Vec<JsonValue> = resp.json().await?;
+		Ok(repo_infos.into_iter().map(|v| v.into()).collect())
 	}
 }
