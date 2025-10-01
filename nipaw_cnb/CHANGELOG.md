@@ -1,5 +1,12 @@
 # 变更日志
 
+## [0.3.3](https://github.com/puniyu-plugins/nipaw/compare/v0.3.2...v0.3.3) (2025-10-01)
+
+
+### 🔧 其他更新
+
+* **deps:** 更新 nipaw 相关包描述并调整发布流程 ([9612897](https://github.com/puniyu-plugins/nipaw/commit/96128978e8788114aa8e29ab9c583cbe8f473033))
+
 ## [0.3.2](https://github.com/puniyu-plugins/nipaw/compare/v0.3.1...v0.3.2) (2025-10-01)
 
 
