@@ -40,7 +40,7 @@
     "create-npm-dirs": "napi create-npm-dirs"
   },
   "devDependencies": {
-    "@napi-rs/cli": "^3.2.0"
+    "@napi-rs/cli": "^3.1.5"
   },
   "packageManager": "pnpm@10.14.0"
 }
