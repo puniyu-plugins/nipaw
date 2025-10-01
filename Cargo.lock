@@ -925,7 +925,6 @@ dependencies = [
  "nipaw_gitee",
  "nipaw_github",
  "serde",
- "tokio",
 ]
 
 [[package]]

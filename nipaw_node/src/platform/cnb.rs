@@ -7,7 +7,7 @@ use crate::{
 		user::{ContributionResult, UserInfo},
 	},
 };
-use napi::tokio::sync::RwLock;
+use napi::tokio::sync::{RwLock, RwLockWriteGuard};
 use napi_derive::napi;
 use nipaw_cnb::CnbClient as NClient;
 use nipaw_core::Client;
@@ -15,6 +15,9 @@ use std::sync::LazyLock;
 
 static CNB_CLIENT: LazyLock<RwLock<NClient>> = LazyLock::new(|| RwLock::new(NClient::default()));
 
+async fn create_client() -> RwLockWriteGuard<'static, NClient> {
+	CNB_CLIENT.write().await
+}
 #[derive(Debug, Default)]
 #[napi]
 pub struct CnbClient;
@@ -47,7 +50,7 @@ impl CnbClient {
 
 	#[napi]
 	pub async fn get_user_info(&self) -> napi::Result<UserInfo> {
-		let client = CNB_CLIENT.read().await;
+		let client = create_client().await;
 		let user_info = client
 			.get_user_info()
 			.await
@@ -56,7 +59,7 @@ impl CnbClient {
 	}
 	#[napi]
 	pub async fn get_user_info_with_name(&self, user_name: String) -> napi::Result<UserInfo> {
-		let client = CNB_CLIENT.read().await;
+		let client = create_client().await;
 		let user_info = client
 			.get_user_info_with_name(user_name.as_str())
 			.await
@@ -69,7 +72,7 @@ impl CnbClient {
 		&self,
 		user_name: String,
 	) -> napi::Result<ContributionResult> {
-		let client = CNB_CLIENT.read().await;
+		let client = create_client().await;
 		let contribution = client
 			.get_user_contribution(user_name.as_str())
 			.await
@@ -79,7 +82,7 @@ impl CnbClient {
 
 	#[napi]
 	pub async fn get_user_avatar_url(&self, user_name: String) -> napi::Result<String> {
-		let client = CNB_CLIENT.read().await;
+		let client = create_client().await;
 		let avatar_url = client
 			.get_user_avatar_url(user_name.as_str())
 			.await
@@ -89,7 +92,7 @@ impl CnbClient {
 
 	#[napi]
 	pub async fn get_repo_info(&self, owner: String, repo: String) -> napi::Result<RepoInfo> {
-		let client = CNB_CLIENT.read().await;
+		let client = create_client().await;
 		let repo_info = client
 			.get_repo_info((owner.as_str(), repo.as_str()))
 			.await
@@ -104,7 +107,7 @@ impl CnbClient {
 		repo: String,
 		use_token: Option<bool>,
 	) -> napi::Result<String> {
-		let client = CNB_CLIENT.read().await;
+		let client = create_client().await;
 		let default_branch = client
 			.get_default_branch((owner.as_str(), repo.as_str()), use_token)
 			.await
@@ -117,7 +120,7 @@ impl CnbClient {
 		&self,
 		option: Option<ReposListOptions>,
 	) -> napi::Result<Vec<RepoInfo>> {
-		let client = CNB_CLIENT.read().await;
+		let client = create_client().await;
 		let repo_infos = client
 			.get_user_repos(option.map(|o| o.into()))
 			.await
@@ -131,7 +134,7 @@ impl CnbClient {
 		user_name: String,
 		option: Option<ReposListOptions>,
 	) -> napi::Result<Vec<RepoInfo>> {
-		let client = CNB_CLIENT.read().await;
+		let client = create_client().await;
 		let repo_infos = client
 			.get_user_repos_with_name(user_name.as_str(), option.map(|o| o.into()))
 			.await
@@ -146,7 +149,7 @@ impl CnbClient {
 		repo: String,
 		sha: String,
 	) -> napi::Result<CommitInfo> {
-		let client = CNB_CLIENT.read().await;
+		let client = create_client().await;
 		let commit_info = client
 			.get_commit_info((owner.as_str(), repo.as_str()), Some(sha.as_str()))
 			.await

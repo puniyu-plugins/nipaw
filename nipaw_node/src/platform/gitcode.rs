@@ -7,7 +7,7 @@ use crate::{
 		user::{ContributionResult, UserInfo},
 	},
 };
-use napi::tokio::sync::RwLock;
+use napi::tokio::sync::{RwLock, RwLockWriteGuard};
 use napi_derive::napi;
 use nipaw_core::Client;
 use nipaw_gitcode::GitCodeClient as NClient;
@@ -15,6 +15,10 @@ use std::sync::LazyLock;
 
 static GITCODE_CLIENT: LazyLock<RwLock<NClient>> =
 	LazyLock::new(|| RwLock::new(NClient::default()));
+
+async fn create_client() -> RwLockWriteGuard<'static, NClient> {
+	GITCODE_CLIENT.write().await
+}
 
 #[derive(Debug, Default)]
 #[napi]
@@ -47,7 +51,7 @@ impl GitCodeClient {
 	}
 	#[napi]
 	pub async fn get_user_info(&self) -> napi::Result<UserInfo> {
-		let client = GITCODE_CLIENT.read().await;
+		let client = create_client().await;
 		let user_info = client
 			.get_user_info()
 			.await
@@ -57,7 +61,7 @@ impl GitCodeClient {
 
 	#[napi]
 	pub async fn get_user_info_with_name(&self, name: String) -> napi::Result<UserInfo> {
-		let client = GITCODE_CLIENT.read().await;
+		let client = create_client().await;
 		let user_info = client
 			.get_user_info_with_name(name.as_str())
 			.await
@@ -70,7 +74,7 @@ impl GitCodeClient {
 		&self,
 		user_name: String,
 	) -> napi::Result<ContributionResult> {
-		let client = GITCODE_CLIENT.read().await;
+		let client = create_client().await;
 		let contribution = client
 			.get_user_contribution(user_name.as_str())
 			.await
@@ -80,7 +84,7 @@ impl GitCodeClient {
 
 	#[napi]
 	pub async fn get_user_avatar_url(&self, user_name: String) -> napi::Result<String> {
-		let client = GITCODE_CLIENT.read().await;
+		let client = create_client().await;
 		let avatar_url = client
 			.get_user_avatar_url(user_name.as_str())
 			.await
@@ -89,7 +93,7 @@ impl GitCodeClient {
 	}
 	#[napi]
 	pub async fn get_repo_info(&self, owner: String, repo: String) -> napi::Result<RepoInfo> {
-		let client = GITCODE_CLIENT.read().await;
+		let client = create_client().await;
 		let repo_info = client
 			.get_repo_info((owner.as_str(), repo.as_str()))
 			.await
@@ -104,7 +108,7 @@ impl GitCodeClient {
 		repo: String,
 		use_token: Option<bool>,
 	) -> napi::Result<String> {
-		let client = GITCODE_CLIENT.read().await;
+		let client = create_client().await;
 		let default_branch = client
 			.get_default_branch((owner.as_str(), repo.as_str()), use_token)
 			.await
@@ -117,7 +121,7 @@ impl GitCodeClient {
 		&self,
 		option: Option<ReposListOptions>,
 	) -> napi::Result<Vec<RepoInfo>> {
-		let client = GITCODE_CLIENT.read().await;
+		let client = create_client().await;
 		let repo_infos = client
 			.get_user_repos(option.map(|o| o.into()))
 			.await
@@ -131,7 +135,7 @@ impl GitCodeClient {
 		user_name: String,
 		option: Option<ReposListOptions>,
 	) -> napi::Result<Vec<RepoInfo>> {
-		let client = GITCODE_CLIENT.read().await;
+		let client = create_client().await;
 		let repo_infos = client
 			.get_user_repos_with_name(user_name.as_str(), option.map(|o| o.into()))
 			.await
@@ -146,7 +150,7 @@ impl GitCodeClient {
 		repo: String,
 		sha: String,
 	) -> napi::Result<CommitInfo> {
-		let client = GITCODE_CLIENT.read().await;
+		let client = create_client().await;
 		let commit_info = client
 			.get_commit_info((owner.as_str(), repo.as_str()), Some(sha.as_str()))
 			.await
