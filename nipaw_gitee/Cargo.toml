@@ -1,7 +1,7 @@
 [package]
 name = "nipaw_gitee"
 version = "0.3.2"
-description = "Gitee provider for nipaw"
+description = "Gitee provider for nipaw_core"
 authors.workspace = true
 license.workspace = true
 readme.workspace = true
@@ -22,5 +22,4 @@ chrono.workspace = true
 nipaw_core.workspace = true
 
 scraper = "0.24.0"
-
 
