@@ -1,6 +1,6 @@
 [package]
 name = "nipaw_gitcode"
-version = "0.3.1"
+version = "0.3.2"
 description = "GitCode provider for nipaw"
 authors.workspace = true
 license.workspace = true
