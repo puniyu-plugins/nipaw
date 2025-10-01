@@ -1,5 +1,5 @@
 {
-  "name": "@puniyu_plugins/nipaw",
+  "name": "@puniyu-plugins/nipaw",
   "version": "1.0.0",
   "description": "Template project for writing node package with napi-rs",
   "main": "index.js",
