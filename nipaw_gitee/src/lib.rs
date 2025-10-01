@@ -2,7 +2,7 @@ mod client;
 mod common;
 mod middleware;
 
-use crate::common::ContributionHtml;
+use crate::common::Html;
 use crate::{
 	client::{HTTP_CLIENT, PROXY_URL},
 	common::JsonValue,
@@ -72,6 +72,20 @@ impl Client for GiteeClient {
 		Ok(user_info.into())
 	}
 
+	async fn get_user_avatar_url(&self, user_name: &str) -> Result<String, CoreError> {
+		let url = format!("{}/users/{}/detail", BASE_URL, user_name);
+		let request = HTTP_CLIENT.get(url).header("Referer", BASE_URL);
+		let resp = request.send().await?;
+		let user_info: JsonValue = resp.json().await?;
+		let avatar_url = user_info.0
+			.get("data")
+			.and_then(|data| data.get("avatar_url"))
+			.and_then(|v| v.as_str())
+			.unwrap()
+			.to_string();
+		Ok(avatar_url)
+	}
+
 	async fn get_user_contribution(
 		&self,
 		user_name: &str,
@@ -82,7 +96,7 @@ impl Client for GiteeClient {
 			.header("X-Requested-With", "XMLHttpRequest")
 			.header("Accept", "application/javascript");
 		let resp = request.send().await?;
-		let html: ContributionHtml = resp.text().await?.into();
+		let html: Html = resp.text().await?.into();
 		Ok(html.into())
 	}
 

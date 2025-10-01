@@ -77,6 +77,15 @@ impl GitCodeClient {
 	}
 
 	#[napi]
+	pub async fn get_user_avatar_url(&self, user_name: String) -> napi::Result<String> {
+		let client = GITCODE_CLIENT.read().await;
+		let avatar_url = client
+			.get_user_avatar_url(user_name.as_str())
+			.await
+			.map_err(|e| napi::Error::from_reason(format!("{:?}", e)))?;
+		Ok(avatar_url)
+	}
+	#[napi]
 	pub async fn get_repo_info(&self, owner: String, repo: String) -> napi::Result<RepoInfo> {
 		let client = GITCODE_CLIENT.read().await;
 		let repo_info = client

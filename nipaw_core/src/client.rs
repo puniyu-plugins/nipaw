@@ -46,6 +46,13 @@ pub trait Client: Send + Sync {
 	/// * `user_name` - 用户名
 	async fn get_user_info_with_name(&self, user_name: &str) -> Result<UserInfo, CoreError>;
 
+	/// 获取用户头像URL
+	///
+	/// # 参数
+	///
+	/// * `user_name` - 用户名
+	async fn get_user_avatar_url(&self, user_name: &str) -> Result<String, CoreError>;
+
 	/// 获取指定用户贡献数据
 	async fn get_user_contribution(&self, user_name: &str)
 	-> Result<ContributionResult, CoreError>;

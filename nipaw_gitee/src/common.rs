@@ -68,16 +68,16 @@ impl From<JsonValue> for RepoInfo {
 	}
 }
 
-pub(crate) struct ContributionHtml(pub(crate) String);
+pub(crate) struct Html(pub(crate) String);
 
-impl From<String> for ContributionHtml {
+impl From<String> for Html {
 	fn from(value: String) -> Self {
-		ContributionHtml(value)
+		Html(value)
 	}
 }
 
-impl From<ContributionHtml> for ContributionResult {
-	fn from(value: ContributionHtml) -> Self {
+impl From<Html> for ContributionResult {
+	fn from(value: Html) -> Self {
 		let html = value.0;
 		let document = scraper::Html::parse_document(&html);
 

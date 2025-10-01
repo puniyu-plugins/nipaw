@@ -60,7 +60,7 @@ impl Client for CnbClient {
 		let mut user_info: JsonValue = resp.json().await?;
 
 		if let Some(username) = user_info.0.get("username").and_then(|v| v.as_str()) {
-			let avatar_url = get_user_avatar_url(username).await?;
+			let avatar_url = self.get_user_avatar_url(username).await?;
 			user_info
 				.0
 				.as_object_mut()
@@ -80,7 +80,7 @@ impl Client for CnbClient {
 		let mut user_info: JsonValue = resp.json().await?;
 
 		if let Some(username) = user_info.0.get("username").and_then(|v| v.as_str()) {
-			let avatar_url = get_user_avatar_url(username).await?;
+			let avatar_url = self.get_user_avatar_url(username).await?;
 			user_info
 				.0
 				.as_object_mut()
@@ -88,6 +88,13 @@ impl Client for CnbClient {
 				.insert("avatar_url".to_string(), Value::String(avatar_url));
 		}
 		Ok(user_info.into())
+	}
+
+	async fn get_user_avatar_url(&self, user_name: &str) -> Result<String, CoreError> {
+		let url = format!("{}/users/{}/avatar/l", BASE_URL, user_name);
+		let resp = HTTP_CLIENT.get(url).send().await?;
+		let avatar_url = resp.url().to_string();
+		Ok(avatar_url)
 	}
 
 	async fn get_user_contribution(
@@ -203,12 +210,4 @@ impl Client for CnbClient {
 		let repo_infos: Vec<JsonValue> = resp.json().await?;
 		Ok(repo_infos.into_iter().map(|v| v.into()).collect())
 	}
-}
-
-/// 获取用户头像重定向过后的地址
-async fn get_user_avatar_url(user_name: &str) -> Result<String, CoreError> {
-	let url = format!("{}/users/{}/avatar/l", BASE_URL, user_name);
-	let resp = HTTP_CLIENT.get(url).send().await?;
-	let avatar_url = resp.url().to_string();
-	Ok(avatar_url)
 }

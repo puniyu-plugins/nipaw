@@ -78,6 +78,16 @@ impl GitHubClient {
 	}
 
 	#[napi]
+	pub async fn get_user_avatar_url(&self, user_name: String) -> napi::Result<String> {
+		let client = GITHUB_CLIENT.read().await;
+		let avatar_url = client
+			.get_user_avatar_url(user_name.as_str())
+			.await
+			.map_err(|e| napi::Error::from_reason(format!("{:?}", e)))?;
+		Ok(avatar_url)
+	}
+
+	#[napi]
 	pub async fn get_repo_info(
 		&self,
 		repo_owner: String,

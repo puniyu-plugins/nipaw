@@ -2,7 +2,7 @@ mod client;
 mod common;
 mod middleware;
 
-use crate::common::ContributionHtml;
+use crate::common::Html;
 use crate::{
 	client::{HTTP_CLIENT, PROXY_URL},
 	common::JsonValue,
@@ -69,6 +69,25 @@ impl Client for GitHubClient {
 		Ok(user_info.into())
 	}
 
+	async fn get_user_avatar_url(&self, user_name: &str) -> Result<String, CoreError> {
+		let url = format!("{}/{}", BASE_URL, user_name);
+		let request = HTTP_CLIENT.get(url).header("Accept", "image/*");
+		let resp = request.send().await?;
+		let html: Html = Html::from(resp.text().await?);
+		let document = scraper::Html::parse_document(&html.0);
+
+		let selector =
+			scraper::Selector::parse("meta[name='octolytics-dimension-user_id']").unwrap();
+		let user_id = document
+			.select(&selector)
+			.next()
+			.and_then(|element| element.value().attr("content"))
+			.map(|id| id.to_string())
+			.unwrap();
+		let avatar_url = format!("https://avatars.githubusercontent.com/u/{}?v=4", user_id);
+		Ok(avatar_url)
+	}
+
 	async fn get_user_contribution(
 		&self,
 		user_name: &str,
@@ -85,7 +104,7 @@ impl Client for GitHubClient {
 			.header("X-Requested-With", "XMLHttpRequest")
 			.header("Accept", "text/html");
 		let resp = request.send().await?;
-		let html: ContributionHtml = resp.text().await?.into();
+		let html: Html = resp.text().await?.into();
 		Ok(html.into())
 	}
 

@@ -71,6 +71,14 @@ impl Client for GitCodeClient {
 		Ok(user_info.into())
 	}
 
+	async fn get_user_avatar_url(&self, user_name: &str) -> Result<String, CoreError> {
+		let url = format!("{}/uc/api/v1/user/setting/profile?username={}", WEB_API_URL, user_name);
+		let resp = HTTP_CLIENT.get(url).header("Referer", BASE_URL).send().await?;
+		let user_info: Value = resp.json().await?;
+		let avatar_url = user_info.get("avatar").and_then(|v| v.as_str()).unwrap().to_string();
+		Ok(avatar_url)
+	}
+
 	async fn get_user_contribution(
 		&self,
 		user_name: &str,
@@ -116,7 +124,7 @@ impl Client for GitCodeClient {
 			}
 			Some(false) | None => {
 				let url =
-					format!("{}/api/v2/projects/{}/{}", WEB_API_URL, repo_path.0, repo_path.1);
+					format!("{}/api/v2/projects/{}%2F{}", WEB_API_URL, repo_path.0, repo_path.1);
 				let request = HTTP_CLIENT.get(url).header("Referer", BASE_URL);
 				let resp = request.send().await?;
 				let repo_info: JsonValue = resp.json().await?;
@@ -178,10 +186,3 @@ impl Client for GitCodeClient {
 	}
 }
 
-async fn get_user_avatar_url(user_name: &str) -> Result<String, CoreError> {
-	let url = format!("{}/uc/api/v1/user/setting/profile?username={}", WEB_API_URL, user_name);
-	let resp = HTTP_CLIENT.get(url).header("Referer", BASE_URL).send().await?;
-	let user_info: Value = resp.json().await?;
-	let avatar_url = user_info.get("avatar").and_then(|v| v.as_str()).unwrap().to_string();
-	Ok(avatar_url)
-}
