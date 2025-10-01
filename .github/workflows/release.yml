@@ -52,10 +52,10 @@ jobs:
         uses: swatinem/rust-cache@v2
 
       - name: 发布
-        uses: katyo/publish-crates@v2
-        with:
-          registry-token: ${{ secrets.CRATES_API_TOKEN }}
-          args: "--exclude nipaw_core --exclude nipaw_node"
+        run: |
+          cargo publish --workspace --exclude nipaw_core --exclude nipaw_node
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CRATES_API_TOKEN }}
 
 
   build:
@@ -93,11 +93,10 @@ jobs:
       - name: 发布npm包
         run: |
           pnpm install
-          pnpm run create-npm-dirs
-          pnpm run artifacts
           pnpm config set provenance true
           pnpm config set registry https://registry.npmjs.org/
+          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > .npmrc
+          pnpm run create-npm-dirs
+          pnpm run artifacts
           pnpm publish --access public
         working-directory: nipaw_node
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
