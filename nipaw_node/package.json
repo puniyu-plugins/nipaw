@@ -1,5 +1,5 @@
 {
-  "name": "nipaw",
+  "name": "@puniyu_plugins/nipaw",
   "version": "1.0.0",
   "description": "Template project for writing node package with napi-rs",
   "main": "index.js",
@@ -36,10 +36,8 @@
   "scripts": {
     "artifacts": "napi artifacts",
     "build": "napi build --platform --release -p nipaw_node --esm -o dist",
-    "build:debug": "napi build --platform -o dist",
     "prepublishOnly": "napi prepublish -t npm",
-    "preversion": "napi build --platform && git add .",
-    "version": "napi version"
+    "create-npm-dirs": "napi create-npm-dirs"
   },
   "devDependencies": {
     "@napi-rs/cli": "^3.2.0"
