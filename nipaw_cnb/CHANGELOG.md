@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.1](https://github.com/puniyu-plugins/nipaw/compare/v0.2.0...v0.2.1) (2025-10-01)
+
+
+### 🔧 其他更新
+
+* **workflow:** 更新下载构建产物的模式匹配规则 ([13e8450](https://github.com/puniyu-plugins/nipaw/commit/13e845074d762b555499b122c86d7968ca83df30))
+
 ## [0.2.0](https://github.com/puniyu-plugins/nipaw/compare/v0.1.0...v0.2.0) (2025-10-01)
 
 
