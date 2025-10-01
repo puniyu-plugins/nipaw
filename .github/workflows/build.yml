@@ -38,7 +38,7 @@ jobs:
       - name: 构建
         run: |
           pnpm install
-          pnpm build
+          pnpm build --target ${{ matrix.platform.target }}
         working-directory: nipaw_node
 
       - name: 上传构建产物
@@ -56,6 +56,9 @@ jobs:
           - runner: macos-latest
             target: x86_64-apple-darwin
             label: macos-x86_64
+          - runner: macos-latest
+            target: aarch64-apple-darwin
+            label: macos-aarch64
 
     steps:
       - name: 检出仓库
@@ -79,7 +82,7 @@ jobs:
       - name: 构建
         run: |
           pnpm install
-          pnpm build
+          pnpm build --target ${{ matrix.platform.target }}
         working-directory: nipaw_node
 
       - name: 上传构建产物
@@ -124,7 +127,7 @@ jobs:
       - name: 构建
         run: |
           pnpm install
-          pnpm build
+          pnpm build --target ${{ matrix.platform.target }}
         working-directory: nipaw_node
 
       - name: 上传构建产物

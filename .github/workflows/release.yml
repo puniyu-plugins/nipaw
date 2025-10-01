@@ -7,6 +7,9 @@ on:
   workflow_dispatch:
 
 
+permissions:
+  id-token: write
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
   cancel-in-progress: true
@@ -52,10 +55,10 @@ jobs:
         uses: swatinem/rust-cache@v2
 
       - name: 发布
-        uses: katyo/publish-crates@v2
-        with:
-          registry-token: ${{ secrets.CRATES_API_TOKEN }}
-          args: "--exclude nipaw_core --exclude nipaw_node"
+        run: |
+          cargo publish --workspace --exclude nipaw_core --exclude nipaw_node
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CRATES_API_TOKEN }}
 
 
   build:
@@ -80,12 +83,6 @@ jobs:
           pattern: nipaw-node*
           path: nipaw_node/artifacts
 
-      - name: 设置 Rust 工具链
-        uses: dtolnay/rust-toolchain@stable
-
-      - name: 设置 Rust 缓存
-        uses: swatinem/rust-cache@v2
-
       - uses: pnpm/action-setup@v4
         with:
           version: 10
@@ -93,10 +90,11 @@ jobs:
       - name: 发布npm包
         run: |
           pnpm install
-          pnpm run create-npm-dirs
-          pnpm run artifacts
           pnpm config set provenance true
           pnpm config set registry https://registry.npmjs.org/
+          echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
+          pnpm run create-npm-dirs
+          pnpm run artifacts
           pnpm publish --access public
         working-directory: nipaw_node
         env:
