@@ -66,8 +66,10 @@ jobs:
 
       - name: 设置 rust
         uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: ${{ matrix.platform.target }}
+
+      - name: 添加目标平台
+        run: |
+          rustup target add ${{ matrix.platform.target }}
 
       - name: 设置 rust 缓存
         uses: swatinem/rust-cache@v2
