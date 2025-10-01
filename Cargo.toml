@@ -11,7 +11,6 @@ resolver = "2"
 exclude = ["nipaw_cli"]
 
 [workspace.package]
-version = "0.1.0"
 authors = ["wuliya <3369906077@qq.com>"]
 license = "LGPL-3.0-only"
 readme = "README.md"
