@@ -1,5 +1,12 @@
 # 变更日志
 
+## [0.3.2](https://github.com/puniyu-plugins/nipaw/compare/v0.3.1...v0.3.2) (2025-10-01)
+
+
+### 🔧 其他更新
+
+* **release:** 移除 nipaw_core 包的发布配置 ([fd0aa9e](https://github.com/puniyu-plugins/nipaw/commit/fd0aa9e595230b9011080736966a3864b53d8419))
+
 ## [0.3.1](https://github.com/puniyu-plugins/nipaw/compare/v0.3.0...v0.3.1) (2025-10-01)
 
 
