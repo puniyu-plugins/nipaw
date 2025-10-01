@@ -1,5 +1,12 @@
 # 变更日志
 
+## [0.3.1](https://github.com/puniyu-plugins/nipaw/compare/v0.3.0...v0.3.1) (2025-10-01)
+
+
+### 🔧 其他更新
+
+* **deps:** 升级 nipaw 系列 crate 至 0.3.0 版本 ([104274b](https://github.com/puniyu-plugins/nipaw/commit/104274b3b62b4e662e1376fcd35b5ec1fcd29e2d))
+
 ## [0.3.0](https://github.com/puniyu-plugins/nipaw/compare/v0.2.2...v0.3.0) (2025-10-01)
 
 
