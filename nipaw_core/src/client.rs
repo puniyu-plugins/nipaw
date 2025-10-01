@@ -1,3 +1,4 @@
+use crate::types::commit::CommitInfo;
 use crate::{
 	error::CoreError,
 	option::ReposListOptions,
@@ -103,4 +104,17 @@ pub trait Client: Send + Sync {
 		user_name: &str,
 		option: Option<ReposListOptions>,
 	) -> Result<Vec<RepoInfo>, CoreError>;
+
+	/// 获取仓库提交信息
+	///
+	/// # 参数
+	///
+	/// * `repo_path` - 仓库路径，格式为 `(owner, repo)`
+	/// * `sha` - 提交ID, 默认为最新提交
+	///
+	async fn get_commit_info(
+		&self,
+		repo_path: (&str, &str),
+		sha: Option<&str>,
+	) -> Result<CommitInfo, CoreError>;
 }

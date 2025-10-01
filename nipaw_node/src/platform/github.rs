@@ -2,6 +2,7 @@ use crate::{
 	common::RT_RUNTIME,
 	option::ReposListOptions,
 	types::{
+		commit::CommitInfo,
 		repo::RepoInfo,
 		user::{ContributionResult, UserInfo},
 	},
@@ -9,10 +10,10 @@ use crate::{
 use napi::tokio::sync::RwLock;
 use napi_derive::napi;
 use nipaw_core::Client;
+use nipaw_github::GitHubClient as NClient;
 use std::sync::LazyLock;
 
-static GITHUB_CLIENT: LazyLock<RwLock<nipaw_github::GitHubClient>> =
-	LazyLock::new(|| RwLock::new(nipaw_github::GitHubClient::default()));
+static GITHUB_CLIENT: LazyLock<RwLock<NClient>> = LazyLock::new(|| RwLock::new(NClient::default()));
 
 #[derive(Debug, Default)]
 #[napi]
@@ -141,5 +142,20 @@ impl GitHubClient {
 			.await
 			.map_err(|e| napi::Error::from_reason(format!("{:?}", e)))?;
 		Ok(repos_list.into_iter().map(|repo| repo.into()).collect())
+	}
+
+	#[napi]
+	pub async fn get_commit(
+		&self,
+		owner: String,
+		repo: String,
+		sha: String,
+	) -> napi::Result<CommitInfo> {
+		let client = GITHUB_CLIENT.read().await;
+		let commit_info = client
+			.get_commit_info((owner.as_str(), repo.as_str()), Some(sha.as_str()))
+			.await
+			.map_err(|e| napi::Error::from_reason(format!("{:?}", e)))?;
+		Ok(commit_info.into())
 	}
 }

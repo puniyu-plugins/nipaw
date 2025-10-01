@@ -1,6 +1,7 @@
 use chrono::{NaiveDate, Utc, Weekday};
 use itertools::Itertools;
 use nipaw_core::types::{
+	commit::{CommitData, CommitInfo, StatsInfo, UserInfo as CommitUserInfo},
 	repo::RepoInfo,
 	user::{ContributionData, ContributionResult, UserInfo},
 };
@@ -116,5 +117,60 @@ impl From<Html> for ContributionResult {
 		let total = contributions.iter().flatten().map(|c| c.count).sum();
 
 		ContributionResult { total, contributions }
+	}
+}
+
+impl From<JsonValue> for CommitInfo {
+	fn from(value: JsonValue) -> Self {
+		let commit_info = value.0;
+		let commit_value = commit_info.get("commit").unwrap().clone();
+		let stats_value = commit_info.get("stats").unwrap().clone();
+		CommitInfo {
+			sha: commit_info.get("sha").and_then(|v| v.as_str()).unwrap().to_string(),
+			commit: JsonValue(commit_value).into(),
+			stats: JsonValue(stats_value).into(),
+		}
+	}
+}
+
+impl From<JsonValue> for CommitData {
+	fn from(value: JsonValue) -> Self {
+		let commit_data = value.0;
+		let author_value = commit_data.get("author").unwrap().clone();
+		let committer_value = commit_data.get("committer").unwrap().clone();
+		CommitData {
+			author: JsonValue(author_value).into(),
+			committer: JsonValue(committer_value).into(),
+			message: commit_data.get("message").and_then(|v| v.as_str()).unwrap().to_string(),
+		}
+	}
+}
+
+impl From<JsonValue> for CommitUserInfo {
+	fn from(value: JsonValue) -> Self {
+		let user_info = value.0;
+		CommitUserInfo {
+			name: user_info.get("name").and_then(|v| v.as_str()).unwrap().to_string(),
+			email: user_info.get("email").and_then(|v| v.as_str()).map(|s| s.to_string()),
+			avatar_url: user_info.get("avatar_url").and_then(|v| v.as_str()).unwrap().to_string(),
+			date: user_info
+				.get("date")
+				.and_then(|v| v.as_str())
+				.unwrap()
+				.to_string()
+				.parse()
+				.unwrap(),
+		}
+	}
+}
+
+impl From<JsonValue> for StatsInfo {
+	fn from(value: JsonValue) -> Self {
+		let stats_info = value.0;
+		StatsInfo {
+			total: stats_info.get("total").and_then(|v| v.as_u64()).unwrap_or(0),
+			additions: stats_info.get("additions").and_then(|v| v.as_u64()).unwrap_or(0),
+			deletions: stats_info.get("deletions").and_then(|v| v.as_u64()).unwrap_or(0),
+		}
 	}
 }

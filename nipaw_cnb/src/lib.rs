@@ -9,6 +9,7 @@ use crate::{
 use async_trait::async_trait;
 use chrono::{Datelike, Local};
 pub use nipaw_core::Client;
+use nipaw_core::types::commit::CommitInfo;
 use nipaw_core::types::user::ContributionResult;
 use nipaw_core::{
 	CoreError,
@@ -209,5 +210,68 @@ impl Client for CnbClient {
 		let resp = request.query(&params).send().await?;
 		let repo_infos: Vec<JsonValue> = resp.json().await?;
 		Ok(repo_infos.into_iter().map(|v| v.into()).collect())
+	}
+
+	async fn get_commit_info(
+		&self,
+		repo_path: (&str, &str),
+		sha: Option<&str>,
+	) -> Result<CommitInfo, CoreError> {
+		let url = format!(
+			"{}/{}/{}/-/git/commits/{}",
+			API_URL,
+			repo_path.0,
+			repo_path.1,
+			sha.unwrap_or("HEAD")
+		);
+		let mut request = HTTP_CLIENT.get(url);
+		if let Some(token) = &self.token {
+			request = request.bearer_auth(token);
+		}
+		let resp = request.send().await?;
+		let mut commit_info: JsonValue = resp.json().await?;
+		let author_name = commit_info
+			.0
+			.get("commit")
+			.and_then(|commit| commit.as_object())
+			.and_then(|commit_obj| commit_obj.get("author"))
+			.and_then(|author| author.as_object())
+			.and_then(|author_obj| author_obj.get("name"))
+			.and_then(|name| name.as_str())
+			.unwrap()
+			.to_string();
+
+		let committer_name = commit_info
+			.0
+			.get("commit")
+			.and_then(|commit| commit.as_object())
+			.and_then(|commit_obj| commit_obj.get("committer"))
+			.and_then(|committer| committer.as_object())
+			.and_then(|committer_obj| committer_obj.get("name"))
+			.and_then(|name| name.as_str())
+			.unwrap()
+			.to_string();
+
+		if let Some(author) = commit_info
+			.0
+			.get_mut("commit")
+			.and_then(|commit| commit.as_object_mut())
+			.and_then(|commit_obj| commit_obj.get_mut("author"))
+			.and_then(|author| author.as_object_mut())
+		{
+			let avatar_url = self.get_user_avatar_url(author_name.as_str()).await?;
+			author.insert("avatar_url".to_string(), Value::String(avatar_url));
+		}
+		if let Some(committer) = commit_info
+			.0
+			.get_mut("commit")
+			.and_then(|commit| commit.as_object_mut())
+			.and_then(|commit_obj| commit_obj.get_mut("committer"))
+			.and_then(|committer| committer.as_object_mut())
+		{
+			let avatar_url = self.get_user_avatar_url(committer_name.as_str()).await?;
+			committer.insert("avatar_url".to_string(), Value::String(avatar_url));
+		}
+		Ok(commit_info.into())
 	}
 }

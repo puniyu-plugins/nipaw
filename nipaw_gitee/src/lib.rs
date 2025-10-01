@@ -10,6 +10,7 @@ use crate::{
 use async_trait::async_trait;
 pub use nipaw_core::Client;
 use nipaw_core::option::ReposListOptions;
+use nipaw_core::types::commit::CommitInfo;
 use nipaw_core::{
 	CoreError,
 	types::{
@@ -17,6 +18,7 @@ use nipaw_core::{
 		user::{ContributionResult, UserInfo},
 	},
 };
+use serde_json::Value;
 use std::collections::HashMap;
 
 static API_URL: &str = "https://gitee.com/api/v5";
@@ -77,7 +79,8 @@ impl Client for GiteeClient {
 		let request = HTTP_CLIENT.get(url).header("Referer", BASE_URL);
 		let resp = request.send().await?;
 		let user_info: JsonValue = resp.json().await?;
-		let avatar_url = user_info.0
+		let avatar_url = user_info
+			.0
 			.get("data")
 			.and_then(|data| data.get("avatar_url"))
 			.and_then(|v| v.as_str())
@@ -204,5 +207,59 @@ impl Client for GiteeClient {
 		let resp = request.query(&params).send().await?;
 		let repo_infos: Vec<JsonValue> = resp.json().await?;
 		Ok(repo_infos.into_iter().map(|v| v.into()).collect())
+	}
+
+	async fn get_commit_info(
+		&self,
+		repo_path: (&str, &str),
+		sha: Option<&str>,
+	) -> Result<CommitInfo, CoreError> {
+		let url = format!(
+			"{}/repos/{}/{}/commits/{}",
+			API_URL,
+			repo_path.0,
+			repo_path.1,
+			sha.unwrap_or("HEAD")
+		);
+		let mut request = HTTP_CLIENT.get(url);
+		if let Some(token) = &self.token {
+			request = request.query(&[("access_token", token.as_str())]);
+		}
+		let resp = request.send().await?;
+		let mut commit_info: JsonValue = resp.json().await?;
+		let author_avatar_url = commit_info
+			.0
+			.get("author")
+			.and_then(|v| v.get("avatar_url"))
+			.and_then(|v| v.as_str())
+			.unwrap()
+			.to_string();
+		let committer_avatar_url = commit_info
+			.0
+			.get("committer")
+			.and_then(|v| v.get("avatar_url"))
+			.and_then(|v| v.as_str())
+			.unwrap()
+			.to_string();
+		if let Some(author_obj) = commit_info
+			.0
+			.get_mut("commit")
+			.and_then(|commit| commit.as_object_mut())
+			.and_then(|commit_obj| commit_obj.get_mut("author"))
+			.and_then(|author| author.as_object_mut())
+		{
+			author_obj.insert("avatar_url".to_string(), Value::String(author_avatar_url));
+		}
+
+		if let Some(committer_obj) = commit_info
+			.0
+			.get_mut("commit")
+			.and_then(|commit| commit.as_object_mut())
+			.and_then(|commit_obj| commit_obj.get_mut("committer"))
+			.and_then(|committer| committer.as_object_mut())
+		{
+			committer_obj.insert("avatar_url".to_string(), Value::String(committer_avatar_url));
+		}
+		Ok(commit_info.into())
 	}
 }

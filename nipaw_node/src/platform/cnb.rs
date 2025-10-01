@@ -2,17 +2,18 @@ use crate::{
 	common::RT_RUNTIME,
 	option::ReposListOptions,
 	types::{
+		commit::CommitInfo,
 		repo::RepoInfo,
 		user::{ContributionResult, UserInfo},
 	},
 };
 use napi::tokio::sync::RwLock;
 use napi_derive::napi;
+use nipaw_cnb::CnbClient as NClient;
 use nipaw_core::Client;
 use std::sync::LazyLock;
 
-static CNB_CLIENT: LazyLock<RwLock<nipaw_cnb::CnbClient>> =
-	LazyLock::new(|| RwLock::new(nipaw_cnb::CnbClient::default()));
+static CNB_CLIENT: LazyLock<RwLock<NClient>> = LazyLock::new(|| RwLock::new(NClient::default()));
 
 #[derive(Debug, Default)]
 #[napi]
@@ -136,5 +137,20 @@ impl CnbClient {
 			.await
 			.map_err(|e| napi::Error::from_reason(format!("{:?}", e)))?;
 		Ok(repo_infos.into_iter().map(|v| v.into()).collect())
+	}
+
+	#[napi]
+	pub async fn get_commit(
+		&self,
+		owner: String,
+		repo: String,
+		sha: String,
+	) -> napi::Result<CommitInfo> {
+		let client = CNB_CLIENT.read().await;
+		let commit_info = client
+			.get_commit_info((owner.as_str(), repo.as_str()), Some(sha.as_str()))
+			.await
+			.map_err(|e| napi::Error::from_reason(format!("{:?}", e)))?;
+		Ok(commit_info.into())
 	}
 }
