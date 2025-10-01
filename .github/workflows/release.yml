@@ -76,7 +76,7 @@ jobs:
       - name: 下载构建产物
         uses: actions/download-artifact@v5
         with:
-          pattern: ${{ env.APP_NAME }}-node*
+          pattern: nipaw-node*
           path: nipaw_node/artifacts
 
       - name: 设置 Rust 工具链
