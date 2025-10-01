@@ -46,7 +46,7 @@ jobs:
         with:
           name: "${{ env.APP_NAME }}-node-${{ matrix.platform.label }}"
           path: |
-            nipaw_node/dist/${{ env.APP_NAME }}.node
+            nipaw_node/dist/${{ env.APP_NAME }}*.node
 
   build_macos:
     runs-on: ${{ matrix.platform.runner }}
@@ -87,7 +87,7 @@ jobs:
         with:
           name: "${{ env.APP_NAME }}-node-${{ matrix.platform.label }}"
           path: |
-            nipaw_node/dist/${{ env.APP_NAME }}.node
+            nipaw_node/dist/${{ env.APP_NAME }}*.node
 
   build_linux:
     runs-on: ${{ matrix.platform.runner }}
@@ -132,7 +132,7 @@ jobs:
         with:
           name: "${{ env.APP_NAME }}-node-${{ matrix.platform.label }}"
           path: |
-            nipaw_node/dist/${{ env.APP_NAME }}.node
+            nipaw_node/dist/${{ env.APP_NAME }}*.node
 
 
       - name: 上传npm包
