@@ -141,5 +141,6 @@ jobs:
         with:
           name: "npm-package"
           path: |
-            nipaw_node/dist/
+            nipaw_node/dist/index.js
+            nipaw_node/dist/index.d.ts
             nipaw_node/package.json

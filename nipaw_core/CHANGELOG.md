@@ -1,4 +1,4 @@
-# Changelog
+# 变更日志
 
 ## [0.2.0](https://github.com/puniyu-plugins/nipaw/compare/v0.1.0...v0.2.0) (2025-10-01)
 

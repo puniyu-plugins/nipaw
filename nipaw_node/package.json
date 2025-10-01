@@ -36,7 +36,7 @@
   "scripts": {
     "artifacts": "napi artifacts",
     "build": "napi build --platform --release -p nipaw_node --esm -o dist",
-    "prepublishOnly": "napi prepublish -t npm",
+    "prepublishOnly": "napi prepublish --no-gh-release",
     "create-npm-dirs": "napi create-npm-dirs"
   },
   "devDependencies": {
