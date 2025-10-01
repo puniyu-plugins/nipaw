@@ -1,5 +1,12 @@
 # 变更日志
 
+## [0.2.1](https://github.com/puniyu-plugins/nipaw/compare/v0.2.0...v0.2.1) (2025-10-01)
+
+
+### 🔧 其他更新
+
+* **workflows:** 调整构建和发布工作流配置 ([8d6b6d7](https://github.com/puniyu-plugins/nipaw/commit/8d6b6d7fc9994bbd832afd9ee010b88513c1e5e8))
+
 ## [0.2.0](https://github.com/puniyu-plugins/nipaw/compare/v0.1.0...v0.2.0) (2025-10-01)
 
 
