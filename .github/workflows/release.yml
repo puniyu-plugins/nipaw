@@ -55,6 +55,7 @@ jobs:
         uses: katyo/publish-crates@v2
         with:
           registry-token: ${{ secrets.CRATES_API_TOKEN }}
+          args: "--exclude nipaw_core --exclude nipaw_node"
 
 
   build:

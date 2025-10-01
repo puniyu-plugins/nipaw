@@ -21,6 +21,7 @@ serde.workspace = true
 chrono.workspace = true
 
 nipaw_core.workspace = true
+
 nipaw_github = { path = "../nipaw_github" }
 nipaw_gitee = { path = "../nipaw_gitee" }
 nipaw_gitcode = { path = "../nipaw_gitcode" }

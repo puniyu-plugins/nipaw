@@ -64,9 +64,6 @@
     }
   ],
   "packages": {
-    "nipaw_core": {
-      "release-type": "rust"
-    },
     "nipaw_cnb": {
       "release-type": "rust"
     },
