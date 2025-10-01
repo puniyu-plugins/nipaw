@@ -1,6 +1,6 @@
 [package]
 name = "nipaw_cnb"
-version = "0.3.0"
+version = "0.3.1"
 description = "Cnb Cool provider for nipaw"
 authors.workspace = true
 license.workspace = true
