@@ -17,7 +17,6 @@ use nipaw_core::{
 		user::{ContributionResult, UserInfo},
 	},
 };
-use serde_json::Value;
 use std::collections::HashMap;
 
 static API_URL: &str = "https://gitee.com/api/v5";
@@ -54,7 +53,8 @@ impl Client for GiteeClient {
 			return Err(CoreError::TokenEmpty);
 		}
 		let url = format!("{}/user", API_URL);
-		let request = HTTP_CLIENT.get(url).query(&[("access_token", self.token.as_ref().unwrap().as_str())]);
+		let request =
+			HTTP_CLIENT.get(url).query(&[("access_token", self.token.as_ref().unwrap().as_str())]);
 
 		let resp = request.send().await?;
 		let user_info: JsonValue = resp.json().await?;
@@ -72,9 +72,15 @@ impl Client for GiteeClient {
 		Ok(user_info.into())
 	}
 
-	async fn get_user_contribution(&self, user_name: &str) -> Result<ContributionResult, CoreError> {
+	async fn get_user_contribution(
+		&self,
+		user_name: &str,
+	) -> Result<ContributionResult, CoreError> {
 		let url = format!("{}/{}", BASE_URL, user_name);
-		let request = HTTP_CLIENT.get(url).header("X-Requested-With", "XMLHttpRequest").header("Accept", "application/javascript");
+		let request = HTTP_CLIENT
+			.get(url)
+			.header("X-Requested-With", "XMLHttpRequest")
+			.header("Accept", "application/javascript");
 		let resp = request.send().await?;
 		let html: ContributionHtml = resp.text().await?.into();
 		Ok(html.into())
@@ -91,19 +97,54 @@ impl Client for GiteeClient {
 		Ok(repo_info.into())
 	}
 
-	async fn get_default_branch(&self, repo_path: (&str, &str)) -> Result<String, CoreError> {
-		let url = format!("{}/repos/{}/{}", API_URL, repo_path.0, repo_path.1);
-		let mut request = HTTP_CLIENT.get(url);
-		if let Some(token) = &self.token {
-			request = request.query(&[("access_token", token.as_str())]);
+	async fn get_default_branch(
+		&self,
+		repo_path: (&str, &str),
+		use_token: Option<bool>,
+	) -> Result<String, CoreError> {
+		match use_token {
+			Some(true) => {
+				if self.token.is_none() {
+					return Err(CoreError::TokenEmpty);
+				}
+				let url = format!("{}/repos/{}/{}", API_URL, repo_path.0, repo_path.1);
+				let mut request = HTTP_CLIENT.get(url);
+				if let Some(token) = &self.token {
+					request = request.query(&[("access_token", token.as_str())]);
+				}
+				let resp = request.send().await?;
+				let repo_info: JsonValue = resp.json().await?;
+				let default_branch =
+					repo_info.0.get("default_branch").and_then(|v| v.as_str()).unwrap().to_string();
+				Ok(default_branch)
+			}
+			Some(false) | None => {
+				let url =
+					format!("{}/{}/{}/branches/names.json", BASE_URL, repo_path.0, repo_path.1);
+				let request = HTTP_CLIENT.get(url).header("Referer", BASE_URL);
+				let resp = request.send().await?;
+				let repo_info: JsonValue = resp.json().await?;
+				let default_branch = repo_info
+					.0
+					.get("branches")
+					.and_then(|branches| branches.as_array())
+					.and_then(|branches| {
+						branches.iter().find(|branch| {
+							branch.get("is_default").and_then(|v| v.as_bool()).unwrap_or(false)
+						})
+					})
+					.and_then(|branch| branch.get("name").and_then(|v| v.as_str()))
+					.map(|s| s.to_string())
+					.unwrap();
+				Ok(default_branch)
+			}
 		}
-		let resp = request.send().await?;
-		let repo_info: Value = resp.json().await?;
-		let default_branch = repo_info.get("default_branch").and_then(|v| v.as_str()).unwrap().to_string();
-		Ok(default_branch)
 	}
 
-	async fn get_user_repos(&self, option: Option<ReposListOptions>) -> Result<Vec<RepoInfo>, CoreError> {
+	async fn get_user_repos(
+		&self,
+		option: Option<ReposListOptions>,
+	) -> Result<Vec<RepoInfo>, CoreError> {
 		let url = format!("{}/user/repos", API_URL);
 		let request = HTTP_CLIENT.get(url);
 		let mut params: HashMap<&str, String> = HashMap::new();
@@ -125,7 +166,11 @@ impl Client for GiteeClient {
 		Ok(repo_infos.into_iter().map(|v| v.into()).collect())
 	}
 
-	async fn get_user_repos_with_name(&self, user_name: &str, option: Option<ReposListOptions>) -> Result<Vec<RepoInfo>, CoreError> {
+	async fn get_user_repos_with_name(
+		&self,
+		user_name: &str,
+		option: Option<ReposListOptions>,
+	) -> Result<Vec<RepoInfo>, CoreError> {
 		let url = format!("{}/users/{}/repos", API_URL, user_name);
 		let request = HTTP_CLIENT.get(url);
 		let mut params: HashMap<&str, String> = HashMap::new();

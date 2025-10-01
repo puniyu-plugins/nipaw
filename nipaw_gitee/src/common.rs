@@ -9,7 +9,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
 #[derive(Serialize, Deserialize)]
-pub(crate) struct JsonValue(Value);
+pub(crate) struct JsonValue(pub(crate) Value);
 
 impl From<JsonValue> for UserInfo {
 	fn from(json_value: JsonValue) -> Self {
@@ -31,13 +31,39 @@ impl From<JsonValue> for RepoInfo {
 		let repo_info = json_value.0;
 		RepoInfo {
 			id: repo_info.get("id").and_then(|v| v.as_u64()).unwrap().to_string(),
-			owner: repo_info.get("owner").and_then(|v| v.get("login")).and_then(|v| v.as_str()).unwrap().to_string(),
+			owner: repo_info
+				.get("owner")
+				.and_then(|v| v.get("login"))
+				.and_then(|v| v.as_str())
+				.unwrap()
+				.to_string(),
 			name: repo_info.get("name").and_then(|v| v.as_str()).unwrap().to_string(),
 			full_name: repo_info.get("full_name").and_then(|v| v.as_str()).unwrap().to_string(),
-			description: repo_info.get("description").and_then(|v| v.as_str()).map(|s| s.to_string()),
-			created_at: repo_info.get("created_at").and_then(|v| v.as_str()).unwrap().to_string().parse().unwrap(),
-			updated_at: repo_info.get("updated_at").and_then(|v| v.as_str()).unwrap().to_string().parse().unwrap(),
-			pushed_at: repo_info.get("pushed_at").and_then(|v| v.as_str()).unwrap().to_string().parse().unwrap(),
+			description: repo_info
+				.get("description")
+				.and_then(|v| v.as_str())
+				.map(|s| s.to_string()),
+			created_at: repo_info
+				.get("created_at")
+				.and_then(|v| v.as_str())
+				.unwrap()
+				.to_string()
+				.parse()
+				.unwrap(),
+			updated_at: repo_info
+				.get("updated_at")
+				.and_then(|v| v.as_str())
+				.unwrap()
+				.to_string()
+				.parse()
+				.unwrap(),
+			pushed_at: repo_info
+				.get("pushed_at")
+				.and_then(|v| v.as_str())
+				.unwrap()
+				.to_string()
+				.parse()
+				.unwrap(),
 		}
 	}
 }
@@ -63,8 +89,18 @@ impl From<ContributionHtml> for ContributionResult {
 				let data_content = element.value().attr("data-content")?;
 				let date_str = element.value().attr("date")?;
 
-				let count = data_content.split('个').next()?.rsplit(':').next()?.parse::<u32>().unwrap_or(0);
-				let date = NaiveDate::parse_from_str(date_str, "%Y%m%d").ok()?.and_hms_opt(0, 0, 0)?.and_local_timezone(Utc).unwrap();
+				let count = data_content
+					.split('个')
+					.next()?
+					.rsplit(':')
+					.next()?
+					.parse::<u32>()
+					.unwrap_or(0);
+				let date = NaiveDate::parse_from_str(date_str, "%Y%m%d")
+					.ok()?
+					.and_hms_opt(0, 0, 0)?
+					.and_local_timezone(Utc)
+					.unwrap();
 
 				Some(ContributionData { date, count })
 			})

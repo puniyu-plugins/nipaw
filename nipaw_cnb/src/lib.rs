@@ -53,13 +53,19 @@ impl Client for CnbClient {
 			return Err(CoreError::TokenEmpty);
 		}
 		let url = format!("{}/user", API_URL);
-		let request = HTTP_CLIENT.get(url).header("Authorization", format!("Bearer {}", self.token.as_ref().unwrap()));
+		let request = HTTP_CLIENT
+			.get(url)
+			.header("Authorization", format!("Bearer {}", self.token.as_ref().unwrap()));
 		let resp = request.send().await?;
 		let mut user_info: JsonValue = resp.json().await?;
 
 		if let Some(username) = user_info.0.get("username").and_then(|v| v.as_str()) {
 			let avatar_url = get_user_avatar_url(username).await?;
-			user_info.0.as_object_mut().unwrap().insert("avatar_url".to_string(), Value::String(avatar_url));
+			user_info
+				.0
+				.as_object_mut()
+				.unwrap()
+				.insert("avatar_url".to_string(), Value::String(avatar_url));
 		}
 		Ok(user_info.into())
 	}
@@ -75,16 +81,24 @@ impl Client for CnbClient {
 
 		if let Some(username) = user_info.0.get("username").and_then(|v| v.as_str()) {
 			let avatar_url = get_user_avatar_url(username).await?;
-			user_info.0.as_object_mut().unwrap().insert("avatar_url".to_string(), Value::String(avatar_url));
+			user_info
+				.0
+				.as_object_mut()
+				.unwrap()
+				.insert("avatar_url".to_string(), Value::String(avatar_url));
 		}
 		Ok(user_info.into())
 	}
 
-	async fn get_user_contribution(&self, user_name: &str) -> Result<ContributionResult, CoreError> {
+	async fn get_user_contribution(
+		&self,
+		user_name: &str,
+	) -> Result<ContributionResult, CoreError> {
 		let mut url = Url::parse(&format!("{}/users/{}/calendar", BASE_URL, user_name))?;
 		let year = Local::now().year();
 		url.query_pairs_mut().append_pair("year", &year.to_string());
-		let resp = HTTP_CLIENT.get(url).header("Accept", " application/vnd.cnb.web+json").send().await?;
+		let resp =
+			HTTP_CLIENT.get(url).header("Accept", " application/vnd.cnb.web+json").send().await?;
 		let contribution_result: JsonValue = resp.json().await?;
 		Ok(contribution_result.into())
 	}
@@ -100,19 +114,52 @@ impl Client for CnbClient {
 		Ok(repo_info.into())
 	}
 
-	async fn get_default_branch(&self, repo_path: (&str, &str)) -> Result<String, CoreError> {
-		let url = format!("{}/repos/{}/{}/-/git/head", API_URL, repo_path.0, repo_path.1);
-		let mut request = HTTP_CLIENT.get(url);
-		if let Some(token) = &self.token {
-			request = request.bearer_auth(token);
+	async fn get_default_branch(
+		&self,
+		repo_path: (&str, &str),
+		use_token: Option<bool>,
+	) -> Result<String, CoreError> {
+		match use_token {
+			Some(true) => {
+				if self.token.is_none() {
+					return Err(CoreError::TokenEmpty);
+				}
+				let url = format!("{}/repos/{}/{}/-/git/head", API_URL, repo_path.0, repo_path.1);
+				let mut request = HTTP_CLIENT.get(url);
+				if let Some(token) = &self.token {
+					request = request.bearer_auth(token);
+				}
+				let resp = request.send().await?;
+				let repo_info: JsonValue = resp.json().await?;
+				let default_branch =
+					repo_info.0.get("name").and_then(|v| v.as_str()).unwrap().to_string();
+				Ok(default_branch)
+			}
+			Some(false) | None => {
+				let url = format!(
+					"{}/repos/{}/{}/-/git/overview-branches?limit=5",
+					BASE_URL, repo_path.0, repo_path.1
+				);
+				let request = HTTP_CLIENT.get(url).header("Accept", "application/vnd.cnb.web+json");
+				let resp = request.send().await?;
+				let repo_info: JsonValue = resp.json().await?;
+				let default_branch = repo_info
+					.0
+					.get("default_branch")
+					.and_then(|v| v.get("name"))
+					.and_then(|v| v.as_str())
+					.map(|s| s.trim_start_matches("refs/heads/"))
+					.unwrap()
+					.to_string();
+				Ok(default_branch)
+			}
 		}
-		let resp = request.send().await?;
-		let repo_info: Value = resp.json().await?;
-		let default_branch = repo_info.get("name").and_then(|v| v.as_str()).unwrap().to_string();
-		Ok(default_branch)
 	}
 
-	async fn get_user_repos(&self, option: Option<ReposListOptions>) -> Result<Vec<RepoInfo>, CoreError> {
+	async fn get_user_repos(
+		&self,
+		option: Option<ReposListOptions>,
+	) -> Result<Vec<RepoInfo>, CoreError> {
 		let url = format!("{}/user/repos", API_URL);
 		let mut request = HTTP_CLIENT.get(url);
 		if let Some(token) = &self.token {
@@ -132,7 +179,11 @@ impl Client for CnbClient {
 		Ok(repo_infos.into_iter().map(|v| v.into()).collect())
 	}
 
-	async fn get_user_repos_with_name(&self, user_name: &str, option: Option<ReposListOptions>) -> Result<Vec<RepoInfo>, CoreError> {
+	async fn get_user_repos_with_name(
+		&self,
+		user_name: &str,
+		option: Option<ReposListOptions>,
+	) -> Result<Vec<RepoInfo>, CoreError> {
 		let url = format!("{}/users/{}/repos", API_URL, user_name);
 		let mut request = HTTP_CLIENT.get(url);
 		if let Some(token) = &self.token {

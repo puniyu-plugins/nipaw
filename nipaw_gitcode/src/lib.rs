@@ -53,7 +53,8 @@ impl Client for GitCodeClient {
 			return Err(CoreError::TokenEmpty);
 		}
 		let url = format!("{}/user", API_URL);
-		let request = HTTP_CLIENT.get(url).query(&[("access_token", self.token.as_ref().unwrap().as_str())]);
+		let request =
+			HTTP_CLIENT.get(url).query(&[("access_token", self.token.as_ref().unwrap().as_str())]);
 		let resp = request.send().await?;
 		let user_info: JsonValue = resp.json().await?;
 		Ok(user_info.into())
@@ -70,8 +71,12 @@ impl Client for GitCodeClient {
 		Ok(user_info.into())
 	}
 
-	async fn get_user_contribution(&self, user_name: &str) -> Result<ContributionResult, CoreError> {
-		let mut url = Url::parse(&format!("{}/uc/api/v1/events/{}/contributions", WEB_API_URL, user_name))?;
+	async fn get_user_contribution(
+		&self,
+		user_name: &str,
+	) -> Result<ContributionResult, CoreError> {
+		let mut url =
+			Url::parse(&format!("{}/uc/api/v1/events/{}/contributions", WEB_API_URL, user_name))?;
 		url.query_pairs_mut().append_pair("username", user_name);
 		let request = HTTP_CLIENT.get(url);
 		let resp = request.header("Referer", BASE_URL).send().await?;
@@ -90,19 +95,43 @@ impl Client for GitCodeClient {
 		Ok(repo_info.into())
 	}
 
-	async fn get_default_branch(&self, repo_path: (&str, &str)) -> Result<String, CoreError> {
-		let url = format!("{}/repos/{}/{}", API_URL, repo_path.0, repo_path.1);
-		let mut request = HTTP_CLIENT.get(url);
-		if let Some(token) = &self.token {
-			request = request.query(&[("access_token", token.as_str())]);
-		}
-		let resp = request.send().await?;
-		let repo_info: Value = resp.json().await?;
-		let default_branch = repo_info.get("default_branch").and_then(|v| v.as_str()).unwrap().to_string();
+	async fn get_default_branch(
+		&self,
+		repo_path: (&str, &str),
+		use_token: Option<bool>,
+	) -> Result<String, CoreError> {
+		let repo_info = match use_token {
+			Some(true) => {
+				if self.token.is_none() {
+					return Err(CoreError::TokenEmpty);
+				}
+				let url = format!("{}/repos/{}/{}", API_URL, repo_path.0, repo_path.1);
+				let mut request = HTTP_CLIENT.get(url);
+				if let Some(token) = &self.token {
+					request = request.query(&[("access_token", token.as_str())]);
+				}
+				let resp = request.send().await?;
+				let repo_info: JsonValue = resp.json().await?;
+				repo_info.0
+			}
+			Some(false) | None => {
+				let url =
+					format!("{}/api/v2/projects/{}/{}", WEB_API_URL, repo_path.0, repo_path.1);
+				let request = HTTP_CLIENT.get(url).header("Referer", BASE_URL);
+				let resp = request.send().await?;
+				let repo_info: JsonValue = resp.json().await?;
+				repo_info.0
+			}
+		};
+		let default_branch =
+			repo_info.get("default_branch").and_then(|v| v.as_str()).unwrap().to_string();
 		Ok(default_branch)
 	}
 
-	async fn get_user_repos(&self, option: Option<ReposListOptions>) -> Result<Vec<RepoInfo>, CoreError> {
+	async fn get_user_repos(
+		&self,
+		option: Option<ReposListOptions>,
+	) -> Result<Vec<RepoInfo>, CoreError> {
 		let url = format!("{}/user/repos", API_URL);
 		let request = HTTP_CLIENT.get(url);
 		let mut params: HashMap<&str, String> = HashMap::new();
@@ -123,7 +152,11 @@ impl Client for GitCodeClient {
 		Ok(repo_infos.into_iter().map(|v| v.into()).collect())
 	}
 
-	async fn get_user_repos_with_name(&self, user_name: &str, option: Option<ReposListOptions>) -> Result<Vec<RepoInfo>, CoreError> {
+	async fn get_user_repos_with_name(
+		&self,
+		user_name: &str,
+		option: Option<ReposListOptions>,
+	) -> Result<Vec<RepoInfo>, CoreError> {
 		let url = format!("{}/users/{}/repos", API_URL, user_name);
 		let request = HTTP_CLIENT.get(url);
 		let mut params: HashMap<&str, String> = HashMap::new();

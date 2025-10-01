@@ -9,7 +9,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
 #[derive(Serialize, Deserialize)]
-pub(crate) struct JsonValue(Value);
+pub(crate) struct JsonValue(pub(crate) Value);
 
 impl From<JsonValue> for UserInfo {
 	fn from(json_value: JsonValue) -> Self {
@@ -31,13 +31,39 @@ impl From<JsonValue> for RepoInfo {
 		let repo_info = json_value.0;
 		RepoInfo {
 			id: repo_info.get("id").and_then(|v| v.as_u64()).unwrap().to_string(),
-			owner: repo_info.get("owner").and_then(|v| v.get("login")).and_then(|v| v.as_str()).unwrap().to_string(),
+			owner: repo_info
+				.get("owner")
+				.and_then(|v| v.get("login"))
+				.and_then(|v| v.as_str())
+				.unwrap()
+				.to_string(),
 			name: repo_info.get("name").and_then(|v| v.as_str()).unwrap().to_string(),
 			full_name: repo_info.get("full_name").and_then(|v| v.as_str()).unwrap().to_string(),
-			description: repo_info.get("description").and_then(|v| v.as_str()).map(|s| s.to_string()),
-			created_at: repo_info.get("created_at").and_then(|v| v.as_str()).unwrap().to_string().parse().unwrap(),
-			updated_at: repo_info.get("updated_at").and_then(|v| v.as_str()).unwrap().to_string().parse().unwrap(),
-			pushed_at: repo_info.get("pushed_at").and_then(|v| v.as_str()).unwrap().to_string().parse().unwrap(),
+			description: repo_info
+				.get("description")
+				.and_then(|v| v.as_str())
+				.map(|s| s.to_string()),
+			created_at: repo_info
+				.get("created_at")
+				.and_then(|v| v.as_str())
+				.unwrap()
+				.to_string()
+				.parse()
+				.unwrap(),
+			updated_at: repo_info
+				.get("updated_at")
+				.and_then(|v| v.as_str())
+				.unwrap()
+				.to_string()
+				.parse()
+				.unwrap(),
+			pushed_at: repo_info
+				.get("pushed_at")
+				.and_then(|v| v.as_str())
+				.unwrap()
+				.to_string()
+				.parse()
+				.unwrap(),
 		}
 	}
 }

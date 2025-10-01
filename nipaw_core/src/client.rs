@@ -63,8 +63,16 @@ pub trait Client: Send + Sync {
 	/// # 参数
 	///
 	/// * `repo_path` - 仓库路径，格式为 `(owner, repo)`
+	/// * `use_token` - 是否使用token获取仓库默认分支, 默认为 `false`
 	///
-	async fn get_default_branch(&self, repo_path: (&str, &str)) -> Result<String, CoreError>;
+	/// ## 说明
+	/// * 当 `use_token` 为 `true` 时, 会走OPENAPI获取仓库默认分支, 否则走WEBAPI获取仓库默认分支
+	///
+	async fn get_default_branch(
+		&self,
+		repo_path: (&str, &str),
+		use_token: Option<bool>,
+	) -> Result<String, CoreError>;
 
 	/// 获取用户仓库信息列表
 	///

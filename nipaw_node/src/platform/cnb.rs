@@ -11,7 +11,8 @@ use napi_derive::napi;
 use nipaw_core::Client;
 use std::sync::LazyLock;
 
-static CNB_CLIENT: LazyLock<RwLock<nipaw_cnb::CnbClient>> = LazyLock::new(|| RwLock::new(nipaw_cnb::CnbClient::default()));
+static CNB_CLIENT: LazyLock<RwLock<nipaw_cnb::CnbClient>> =
+	LazyLock::new(|| RwLock::new(nipaw_cnb::CnbClient::default()));
 
 #[derive(Debug, Default)]
 #[napi]
@@ -24,7 +25,9 @@ impl CnbClient {
 		let rt = RT_RUNTIME.lock().unwrap();
 		rt.block_on(async {
 			let mut client = CNB_CLIENT.write().await;
-			client.set_token(token.as_str()).map_err(|e| napi::Error::from_reason(format!("{:?}", e)))?;
+			client
+				.set_token(token.as_str())
+				.map_err(|e| napi::Error::from_reason(format!("{:?}", e)))?;
 			Ok(())
 		})
 	}
@@ -34,7 +37,9 @@ impl CnbClient {
 		let rt = RT_RUNTIME.lock().unwrap();
 		rt.block_on(async {
 			let mut client = CNB_CLIENT.write().await;
-			client.set_proxy(proxy.as_str()).map_err(|e| napi::Error::from_reason(format!("{:?}", e)))?;
+			client
+				.set_proxy(proxy.as_str())
+				.map_err(|e| napi::Error::from_reason(format!("{:?}", e)))?;
 			Ok(())
 		})
 	}
@@ -42,47 +47,79 @@ impl CnbClient {
 	#[napi]
 	pub async fn get_user_info(&self) -> napi::Result<UserInfo> {
 		let client = CNB_CLIENT.read().await;
-		let user_info = client.get_user_info().await.map_err(|e| napi::Error::from_reason(format!("{:?}", e)))?;
+		let user_info = client
+			.get_user_info()
+			.await
+			.map_err(|e| napi::Error::from_reason(format!("{:?}", e)))?;
 		Ok(user_info.into())
 	}
 	#[napi]
 	pub async fn get_user_info_with_name(&self, user_name: String) -> napi::Result<UserInfo> {
 		let client = CNB_CLIENT.read().await;
-		let user_info = client.get_user_info_with_name(user_name.as_str()).await.map_err(|e| napi::Error::from_reason(format!("{:?}", e)))?;
+		let user_info = client
+			.get_user_info_with_name(user_name.as_str())
+			.await
+			.map_err(|e| napi::Error::from_reason(format!("{:?}", e)))?;
 		Ok(user_info.into())
 	}
 
 	#[napi]
-	pub async fn get_user_contribution(&self, user_name: String) -> napi::Result<ContributionResult> {
+	pub async fn get_user_contribution(
+		&self,
+		user_name: String,
+	) -> napi::Result<ContributionResult> {
 		let client = CNB_CLIENT.read().await;
-		let contribution = client.get_user_contribution(user_name.as_str()).await.map_err(|e| napi::Error::from_reason(format!("{:?}", e)))?;
+		let contribution = client
+			.get_user_contribution(user_name.as_str())
+			.await
+			.map_err(|e| napi::Error::from_reason(format!("{:?}", e)))?;
 		Ok(contribution.into())
 	}
 
 	#[napi]
 	pub async fn get_repo_info(&self, owner: String, repo: String) -> napi::Result<RepoInfo> {
 		let client = CNB_CLIENT.read().await;
-		let repo_info = client.get_repo_info((owner.as_str(), repo.as_str())).await.map_err(|e| napi::Error::from_reason(format!("{:?}", e)))?;
+		let repo_info = client
+			.get_repo_info((owner.as_str(), repo.as_str()))
+			.await
+			.map_err(|e| napi::Error::from_reason(format!("{:?}", e)))?;
 		Ok(repo_info.into())
 	}
 
 	#[napi]
-	pub async fn get_default_branch(&self, owner: String, repo: String) -> napi::Result<String> {
+	pub async fn get_default_branch(
+		&self,
+		owner: String,
+		repo: String,
+		use_token: Option<bool>,
+	) -> napi::Result<String> {
 		let client = CNB_CLIENT.read().await;
-		let default_branch =
-			client.get_default_branch((owner.as_str(), repo.as_str())).await.map_err(|e| napi::Error::from_reason(format!("{:?}", e)))?;
+		let default_branch = client
+			.get_default_branch((owner.as_str(), repo.as_str()), use_token)
+			.await
+			.map_err(|e| napi::Error::from_reason(format!("{:?}", e)))?;
 		Ok(default_branch)
 	}
 
 	#[napi]
-	pub async fn get_user_repos(&self, option: Option<ReposListOptions>) -> napi::Result<Vec<RepoInfo>> {
+	pub async fn get_user_repos(
+		&self,
+		option: Option<ReposListOptions>,
+	) -> napi::Result<Vec<RepoInfo>> {
 		let client = CNB_CLIENT.read().await;
-		let repo_infos = client.get_user_repos(option.map(|o| o.into())).await.map_err(|e| napi::Error::from_reason(format!("{:?}", e)))?;
+		let repo_infos = client
+			.get_user_repos(option.map(|o| o.into()))
+			.await
+			.map_err(|e| napi::Error::from_reason(format!("{:?}", e)))?;
 		Ok(repo_infos.into_iter().map(|v| v.into()).collect())
 	}
 
 	#[napi]
-	pub async fn get_user_repos_with_name(&self, user_name: String, option: Option<ReposListOptions>) -> napi::Result<Vec<RepoInfo>> {
+	pub async fn get_user_repos_with_name(
+		&self,
+		user_name: String,
+		option: Option<ReposListOptions>,
+	) -> napi::Result<Vec<RepoInfo>> {
 		let client = CNB_CLIENT.read().await;
 		let repo_infos = client
 			.get_user_repos_with_name(user_name.as_str(), option.map(|o| o.into()))
