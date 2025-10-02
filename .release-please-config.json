@@ -1,7 +1,7 @@
 {
   "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
   "release-type": "node",
-  "include-component-in-tag": false,
+  "include-component-in-tag": true,
   "changelog-sections": [
     {
       "type": "feat",
@@ -65,16 +65,24 @@
   ],
   "packages": {
     "nipaw_cnb": {
-      "release-type": "rust"
+      "release-type": "rust",
+      "component": "cnb"
     },
     "nipaw_github": {
-      "release-type": "rust"
+      "release-type": "rust",
+      "component": "github"
     },
     "nipaw_gitee": {
-      "release-type": "rust"
+      "release-type": "rust",
+      "component": "gitee"
     },
     "nipaw_gitcode": {
-      "release-type": "rust"
+      "release-type": "rust",
+      "component": "gitcode"
+    },
+    "nipaw_node": {
+      "release-type": "node",
+      "component": "node"
     }
   },
   "commit-search-depth": 50

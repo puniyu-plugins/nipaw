@@ -19,7 +19,7 @@ async fn create_client() -> RwLockWriteGuard<'static, NClient> {
 	GITEE_CLIENT.write().await
 }
 #[derive(Debug, Default)]
-#[napi]
+#[napi(constructor)]
 pub struct GiteeClient;
 
 #[napi]

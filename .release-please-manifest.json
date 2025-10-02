@@ -2,5 +2,6 @@
   "nipaw_cnb": "0.3.3",
   "nipaw_github": "0.3.3",
   "nipaw_gitee": "0.3.3",
-  "nipaw_gitcode": "0.3.3"
+  "nipaw_gitcode": "0.3.3",
+  "nipaw_node": "1.0.2"
 }

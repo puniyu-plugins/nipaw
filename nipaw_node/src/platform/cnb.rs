@@ -19,7 +19,7 @@ async fn create_client() -> RwLockWriteGuard<'static, NClient> {
 	CNB_CLIENT.write().await
 }
 #[derive(Debug, Default)]
-#[napi]
+#[napi(constructor)]
 pub struct CnbClient;
 
 #[napi]

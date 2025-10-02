@@ -19,7 +19,7 @@ async fn create_client() -> RwLockWriteGuard<'static, NClient> {
 }
 
 #[derive(Debug, Default)]
-#[napi]
+#[napi(constructor)]
 pub struct GitHubClient;
 
 #[napi]
