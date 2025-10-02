@@ -60,31 +60,31 @@ jobs:
 
       - name: 发布nipaw_github
         if: needs.release.outputs.github
-        uses: katyo/publish-crates@v2
-        with:
-          registry-token: ${{ secrets.CRATES_API_TOKEN }}
-          path: 'nipaw_github'
+        run: |
+          cargo publish --package nipaw_github
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CRATES_API_TOKEN }}
 
       - name: 发布nipaw_gitcode
         if: needs.release.outputs.gitcode
-        uses: katyo/publish-crates@v2
-        with:
-          registry-token: ${{ secrets.CRATES_API_TOKEN }}
-          path: 'nipaw_gitcode'
+        run: |
+          cargo publish --package nipaw_gitcode
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CRATES_API_TOKEN }}
 
       - name: 发布nipaw_gitee
         if: needs.release.outputs.gitee
-        uses: katyo/publish-crates@v2
-        with:
-          registry-token: ${{ secrets.CRATES_API_TOKEN }}
-          path: 'nipaw_gitee'
+        run: |
+          cargo publish --package nipaw_gitee
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CRATES_API_TOKEN }}
 
       - name: 发布nipaw_cnb
         if: needs.release.outputs.cnb
-        uses: katyo/publish-crates@v2
-        with:
-          registry-token: ${{ secrets.CRATES_API_TOKEN }}
-          path: 'nipaw_cnb'
+        run: |
+          cargo publish --package nipaw_cnb
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CRATES_API_TOKEN }}
 
 
   build:
