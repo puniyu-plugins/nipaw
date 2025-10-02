@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.1](https://github.com/puniyu-plugins/nipaw/compare/node-v1.1.0...node-v1.1.1) (2025-10-02)
+
+
+### 🐛 错误修复
+
+* 修复导出 ([aea84c2](https://github.com/puniyu-plugins/nipaw/commit/aea84c22f9c62ae1f95582c63edb3c7fa0f1d924))
+
 ## [1.1.0](https://github.com/puniyu-plugins/nipaw/compare/node-v1.0.2...node-v1.1.0) (2025-10-02)
 
 
