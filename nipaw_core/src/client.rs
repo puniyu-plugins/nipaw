@@ -1,8 +1,9 @@
 use crate::{
 	Result,
-	option::{CommitListOptions, ReposListOptions},
+	option::{CommitListOptions, OrgRepoListOptions, ReposListOptions},
 	types::{
 		commit::CommitInfo,
+		org::OrgInfo,
 		repo::RepoInfo,
 		user::{ContributionResult, UserInfo},
 	},
@@ -57,6 +58,28 @@ pub trait Client: Send + Sync {
 	/// 获取指定用户贡献数据
 	async fn get_user_contribution(&self, user_name: &str) -> Result<ContributionResult>;
 
+	/// 获取组织信息
+	///
+	/// # 参数
+	///
+	/// * `org_name` - 组织名
+	///
+	async fn get_org_info(&self, org_name: &str) -> Result<OrgInfo>;
+
+	/// 获取组织仓库信息列表
+	async fn get_org_repos(
+		&self,
+		org_name: &str,
+		options: Option<OrgRepoListOptions>,
+	) -> Result<Vec<RepoInfo>>;
+
+	/// 获取组织头像URL
+	///
+	/// # 参数
+	///
+	/// * `org_name` - 组织名
+	///
+	async fn get_org_avatar_url(&self, org_name: &str) -> Result<String>;
 	/// 获取仓库信息
 	///
 	/// # 参数

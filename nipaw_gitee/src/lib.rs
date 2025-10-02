@@ -9,6 +9,8 @@ use crate::{
 	common::{Html, JsonValue},
 };
 use async_trait::async_trait;
+use nipaw_core::option::OrgRepoListOptions;
+use nipaw_core::types::org::OrgInfo;
 use nipaw_core::{
 	Result,
 	error::Error,
@@ -101,6 +103,54 @@ impl Client for GiteeClient {
 		Ok(html.into())
 	}
 
+	async fn get_org_info(&self, org_name: &str) -> Result<OrgInfo> {
+		let url = format!("{}/orgs/{}", BASE_URL, org_name);
+		let mut request = HTTP_CLIENT.get(url);
+		if let Some(token) = &self.token {
+			request = request.query(&[("access_token", token.as_str())]);
+		}
+		let resp = request.send().await?;
+		let org_info: JsonValue = resp.json().await?;
+		Ok(org_info.into())
+	}
+
+	async fn get_org_repos(
+		&self,
+		org_name: &str,
+		options: Option<OrgRepoListOptions>,
+	) -> Result<Vec<RepoInfo>> {
+		let url = format!("{}/orgs/{}/repos", API_URL, org_name);
+		let mut request = HTTP_CLIENT.get(url);
+		let mut params = HashMap::new();
+		if let Some(token) = &self.token {
+			request = request.query(&[("access_token", token.as_str())]);
+		}
+		if let Some(option) = options {
+			let per_page = option.per_page.unwrap_or_default().min(100);
+			params.insert("per_page", per_page.to_string());
+			let page = option.page.unwrap_or_default();
+			params.insert("page", page.to_string());
+		}
+		let resp = request.send().await?;
+		let repo_list: Vec<JsonValue> = resp.json().await?;
+		Ok(repo_list.into_iter().map(|v| v.into()).collect())
+	}
+
+	async fn get_org_avatar_url(&self, org_name: &str) -> Result<String> {
+		let url = format!("{}/{}", BASE_URL, org_name);
+		let request = HTTP_CLIENT.get(url);
+		let resp = request.send().await?;
+		let org_html: String = resp.text().await?;
+
+		let document = scraper::Html::parse_document(&org_html);
+		let selector = scraper::Selector::parse("img.avatar.current-group-avatar").unwrap();
+
+		let element = document.select(&selector).next().unwrap();
+		let src = element.value().attr("src").unwrap();
+		let avatar_url = src.split('!').next().unwrap_or(src).to_string();
+		Ok(avatar_url)
+	}
+
 	async fn get_repo_info(&self, repo_path: (&str, &str)) -> Result<RepoInfo> {
 		let url = format!("{}/repos/{}/{}", API_URL, repo_path.0, repo_path.1);
 		let mut request = HTTP_CLIENT.get(url);
@@ -164,7 +214,6 @@ impl Client for GiteeClient {
 			params.insert("access_token", token.to_owned());
 		}
 
-		params.insert("type", "owner".to_string());
 		params.insert("sort", "updated".to_string());
 
 		if let Some(option) = option {
@@ -188,9 +237,7 @@ impl Client for GiteeClient {
 		let mut params: HashMap<&str, String> = HashMap::new();
 		if let Some(token) = &self.token {
 			params.insert("access_token", token.to_owned());
-		}
-
-		params.insert("type", "owner".to_string());
+		};
 		params.insert("sort", "pushed".to_string());
 
 		if let Some(option) = option {

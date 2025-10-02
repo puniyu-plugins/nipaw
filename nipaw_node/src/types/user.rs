@@ -19,6 +19,8 @@ pub struct UserInfo {
 	pub followers: u32,
 	/// 关注的用户数量
 	pub following: u32,
+	/// 公开仓库数量
+	pub public_repo_count: u32,
 }
 
 impl From<nipaw_core::types::user::UserInfo> for UserInfo {
@@ -31,6 +33,7 @@ impl From<nipaw_core::types::user::UserInfo> for UserInfo {
 			email: user_info.email,
 			followers: user_info.followers as u32,
 			following: user_info.following as u32,
+			public_repo_count: user_info.public_repo_count as u32,
 		}
 	}
 }

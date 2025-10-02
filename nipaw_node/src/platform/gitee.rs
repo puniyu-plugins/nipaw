@@ -1,9 +1,10 @@
 use crate::{
 	common::RT_RUNTIME,
 	error::Error,
-	option::{CommitListOptions, ReposListOptions},
+	option::{CommitListOptions, OrgRepoListOptions, ReposListOptions},
 	types::{
 		commit::CommitInfo,
+		org::OrgInfo,
 		repo::RepoInfo,
 		user::{ContributionResult, UserInfo},
 	},
@@ -86,6 +87,41 @@ impl GiteeClient {
 		let client = create_client().await;
 		let contribution = client.get_user_contribution(user_name.as_str()).await?;
 		Ok(contribution.into())
+	}
+
+	/// 获取组织信息
+	///
+	/// ## 参数
+	/// - `org_name` 组织名称
+	#[napi]
+	pub async fn get_org_info(&self, org_name: String) -> Result<OrgInfo, Error> {
+		let client = create_client().await;
+		let org_info = client.get_org_info(org_name.as_str()).await?;
+		Ok(org_info.into())
+	}
+
+	/// 获取组织仓库列表
+	///
+	/// ## 参数
+	/// - `org_name` 组织名称
+	/// - `option` 仓库列表选项
+	#[napi]
+	pub async fn get_org_repos(
+		&self,
+		org_name: String,
+		option: Option<OrgRepoListOptions>,
+	) -> Result<Vec<RepoInfo>, Error> {
+		let client = create_client().await;
+		let repo_infos = client.get_org_repos(org_name.as_str(), option.map(|o| o.into())).await?;
+		Ok(repo_infos.into_iter().map(|v| v.into()).collect())
+	}
+
+	/// 获取组织头像地址
+	#[napi]
+	pub async fn get_org_avatar_url(&self, org_name: String) -> Result<String, Error> {
+		let client = create_client().await;
+		let avatar_url = client.get_org_avatar_url(org_name.as_str()).await?;
+		Ok(avatar_url)
 	}
 
 	/// 获取指定用户头像地址

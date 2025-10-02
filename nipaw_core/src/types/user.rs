@@ -17,6 +17,8 @@ pub struct UserInfo {
 	pub followers: u64,
 	/// 关注的用户数量
 	pub following: u64,
+	/// 公开仓库数量
+	pub public_repo_count: u64,
 }
 
 /// 单日贡献数据

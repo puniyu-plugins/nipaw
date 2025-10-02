@@ -13,9 +13,10 @@ use chrono::{Datelike, Local};
 use nipaw_core::{
 	Result,
 	error::Error,
-	option::{CommitListOptions, ReposListOptions},
+	option::{CommitListOptions, OrgRepoListOptions, ReposListOptions},
 	types::{
 		commit::CommitInfo,
+		org::OrgInfo,
 		repo::RepoInfo,
 		user::{ContributionResult, UserInfo},
 	},
@@ -97,9 +98,7 @@ impl Client for CnbClient {
 
 	async fn get_user_avatar_url(&self, user_name: &str) -> Result<String> {
 		let url = format!("{}/users/{}/avatar/l", BASE_URL, user_name);
-		let resp = HTTP_CLIENT.get(url).send().await?;
-		let avatar_url = resp.url().to_string();
-		Ok(avatar_url)
+		Ok(url.to_string())
 	}
 
 	async fn get_user_contribution(&self, user_name: &str) -> Result<ContributionResult> {
@@ -110,6 +109,53 @@ impl Client for CnbClient {
 			HTTP_CLIENT.get(url).header("Accept", " application/vnd.cnb.web+json").send().await?;
 		let contribution_result: JsonValue = resp.json().await?;
 		Ok(contribution_result.into())
+	}
+
+	async fn get_org_info(&self, org_name: &str) -> Result<OrgInfo> {
+		let url = format!("{}/{}", API_URL, org_name);
+		let mut request = HTTP_CLIENT.get(url);
+		if let Some(token) = &self.token {
+			request = request.bearer_auth(token);
+		}
+		let resp = request.send().await?;
+		let mut org_info: JsonValue = resp.json().await?;
+
+		if let Some(username) = org_info.0.get("login").and_then(|v| v.as_str()) {
+			let avatar_url = self.get_user_avatar_url(username).await?;
+			org_info
+				.0
+				.as_object_mut()
+				.unwrap()
+				.insert("avatar_url".to_string(), Value::String(avatar_url));
+		}
+		Ok(org_info.into())
+	}
+
+	async fn get_org_repos(
+		&self,
+		org_name: &str,
+		option: Option<OrgRepoListOptions>,
+	) -> Result<Vec<RepoInfo>> {
+		let url = format!("{}/{}/-/repos", API_URL, org_name);
+		let mut request = HTTP_CLIENT.get(url);
+		if let Some(token) = &self.token {
+			request = request.bearer_auth(token);
+		}
+		let mut params: HashMap<&str, String> = HashMap::new();
+		if let Some(option) = option {
+			let per_page = option.per_page.unwrap_or_default().min(100);
+			params.insert("per_page", per_page.to_string());
+			let page = option.page.unwrap_or_default();
+			params.insert("page", page.to_string());
+		}
+		let resp = request.send().await?;
+		let repo_infos: Vec<JsonValue> = resp.json().await?;
+		Ok(repo_infos.into_iter().map(|v| v.into()).collect())
+	}
+
+	async fn get_org_avatar_url(&self, org_name: &str) -> Result<String> {
+		let url = format!("{}/{}/-/logos/l", BASE_URL, org_name);
+		Ok(url.to_string())
 	}
 
 	async fn get_repo_info(&self, repo_path: (&str, &str)) -> Result<RepoInfo> {
@@ -168,12 +214,13 @@ impl Client for CnbClient {
 	async fn get_user_repos(&self, option: Option<ReposListOptions>) -> Result<Vec<RepoInfo>> {
 		let url = format!("{}/user/repos", API_URL);
 		let mut request = HTTP_CLIENT.get(url);
+		let mut params: HashMap<&str, String> = HashMap::new();
 		if let Some(token) = &self.token {
 			request = request.bearer_auth(token);
 		}
-		let mut params: HashMap<&str, String> = HashMap::new();
-		params.insert("type", "owner".to_owned());
+
 		params.insert("sort", "pushed".to_owned());
+
 		if let Some(option) = option {
 			let per_page = option.per_page.unwrap_or_default().min(100);
 			params.insert("per_page", per_page.to_string());
@@ -192,12 +239,12 @@ impl Client for CnbClient {
 	) -> Result<Vec<RepoInfo>> {
 		let url = format!("{}/users/{}/repos", API_URL, user_name);
 		let mut request = HTTP_CLIENT.get(url);
+		let mut params: HashMap<&str, String> = HashMap::new();
 		if let Some(token) = &self.token {
 			request = request.bearer_auth(token);
 		}
-		let mut params: HashMap<&str, String> = HashMap::new();
+
 		params.insert("role", "owner".to_owned());
-		params.insert("order_by", "last_updated_at".to_owned());
 
 		if let Some(option) = option {
 			let per_page = option.per_page.unwrap_or_default().min(100);

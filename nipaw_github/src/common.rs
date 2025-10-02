@@ -2,12 +2,14 @@ use chrono::{NaiveDate, Utc, Weekday};
 use itertools::Itertools;
 use nipaw_core::types::{
 	commit::{CommitData, CommitInfo, StatsInfo, UserInfo as CommitUserInfo},
+	org::OrgInfo,
 	repo::RepoInfo,
 	user::{ContributionData, ContributionResult, UserInfo},
 };
 use scraper::Selector;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
+
 #[derive(Serialize, Deserialize)]
 pub(crate) struct JsonValue(pub(crate) Value);
 
@@ -22,6 +24,7 @@ impl From<JsonValue> for UserInfo {
 			email: user_info.get("email").and_then(|v| v.as_str()).map(|s| s.to_string()),
 			followers: user_info.get("followers").and_then(|v| v.as_u64()).unwrap(),
 			following: user_info.get("following").and_then(|v| v.as_u64()).unwrap(),
+			public_repo_count: user_info.get("public_repos").and_then(|v| v.as_u64()).unwrap(),
 		}
 	}
 }
@@ -189,6 +192,24 @@ impl From<JsonValue> for StatsInfo {
 			total: stats_info.get("total").and_then(|v| v.as_u64()).unwrap_or(0),
 			additions: stats_info.get("additions").and_then(|v| v.as_u64()).unwrap_or(0),
 			deletions: stats_info.get("deletions").and_then(|v| v.as_u64()).unwrap_or(0),
+		}
+	}
+}
+
+impl From<JsonValue> for OrgInfo {
+	fn from(value: JsonValue) -> Self {
+		let org_info = value.0;
+		OrgInfo {
+			id: org_info.get("id").and_then(|v| v.as_u64()).unwrap(),
+			login: org_info.get("login").and_then(|v| v.as_str()).unwrap().to_string(),
+			name: org_info.get("name").and_then(|v| v.as_str()).map(|s| s.to_string()),
+			email: org_info.get("email").and_then(|v| v.as_str()).map(|s| s.to_string()),
+			avatar_url: org_info.get("avatar_url").and_then(|v| v.as_str()).unwrap().to_string(),
+			description: org_info
+				.get("description")
+				.and_then(|v| v.as_str())
+				.map(|s| s.to_string()),
+			follow_count: org_info.get("follow_count").and_then(|v| v.as_u64()).unwrap_or(0),
 		}
 	}
 }

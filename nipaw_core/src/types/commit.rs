@@ -1,7 +1,7 @@
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CommitInfo {
 	/// 提交的SHA
 	pub sha: String,
@@ -11,7 +11,7 @@ pub struct CommitInfo {
 	pub stats: StatsInfo,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CommitData {
 	/// 作者信息
 	pub author: UserInfo,
@@ -21,7 +21,7 @@ pub struct CommitData {
 	pub message: String,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct UserInfo {
 	/// 用户名
 	pub name: String,
@@ -33,7 +33,7 @@ pub struct UserInfo {
 	pub date: DateTime<Utc>,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct StatsInfo {
 	/// 总提交行数
 	pub total: u64,

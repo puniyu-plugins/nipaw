@@ -45,3 +45,18 @@ impl From<CommitListOptions> for nipaw_core::option::CommitListOptions {
 		}
 	}
 }
+
+#[derive(Debug, Deserialize)]
+#[napi(object)]
+pub struct OrgRepoListOptions {
+	/// 每页数量，默认 30，最大 100
+	pub per_page: Option<u32>,
+	/// 页码，默认 1
+	pub page: Option<u32>,
+}
+
+impl From<OrgRepoListOptions> for nipaw_core::option::OrgRepoListOptions {
+	fn from(value: OrgRepoListOptions) -> Self {
+		nipaw_core::option::OrgRepoListOptions { per_page: value.per_page, page: value.page }
+	}
+}

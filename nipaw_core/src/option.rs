@@ -36,3 +36,13 @@ pub struct CommitListOptions {
 	/// 筛选到此时间结束
 	pub until: Option<DateTime<Utc>>,
 }
+
+#[derive(Debug, Deserialize)]
+pub struct OrgRepoListOptions {
+	/// 每页数量，默认 30，最大 100
+	#[serde(default = "default_per_page")]
+	pub per_page: Option<u32>,
+	/// 页码，默认 1
+	#[serde(default = "default_page")]
+	pub page: Option<u32>,
+}

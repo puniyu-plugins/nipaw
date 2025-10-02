@@ -9,6 +9,8 @@ use crate::{
 	common::JsonValue,
 };
 use async_trait::async_trait;
+use nipaw_core::option::OrgRepoListOptions;
+use nipaw_core::types::org::OrgInfo;
 use nipaw_core::{
 	Result,
 	error::Error,
@@ -61,7 +63,12 @@ impl Client for GitCodeClient {
 		let request =
 			HTTP_CLIENT.get(url).query(&[("access_token", self.token.as_ref().unwrap().as_str())]);
 		let resp = request.send().await?;
-		let user_info: JsonValue = resp.json().await?;
+		let mut user_info: JsonValue = resp.json().await?;
+		if let Some(user) = user_info.0.as_object_mut() {
+			let user_name = user.get("username").and_then(|v| v.as_str()).unwrap();
+			let repo_count = get_user_repo_count(user_name).await?;
+			user.insert("repo_count".to_string(), Value::Number(repo_count.into()));
+		}
 		Ok(user_info.into())
 	}
 
@@ -72,7 +79,11 @@ impl Client for GitCodeClient {
 			request = request.query(&[("access_token", token.as_str())]);
 		}
 		let resp = request.send().await?;
-		let user_info: JsonValue = resp.json().await?;
+		let mut user_info: JsonValue = resp.json().await?;
+		if let Some(user) = user_info.0.as_object_mut() {
+			let repo_count = get_user_repo_count(user_name).await?;
+			user.insert("repo_count".to_string(), Value::Number(repo_count.into()));
+		}
 		Ok(user_info.into())
 	}
 
@@ -92,6 +103,47 @@ impl Client for GitCodeClient {
 		let resp = request.header("Referer", BASE_URL).send().await?;
 		let contribution_result: JsonValue = resp.json().await?;
 		Ok(contribution_result.into())
+	}
+
+	async fn get_org_info(&self, org_name: &str) -> Result<OrgInfo> {
+		let url = format!("{}/orgs/{}", WEB_API_URL, org_name);
+		let mut request = HTTP_CLIENT.get(url);
+		if let Some(token) = &self.token {
+			request = request.query(&[("access_token", token.as_str())]);
+		}
+		let resp = request.send().await?;
+		let org_info: JsonValue = resp.json().await?;
+		Ok(org_info.into())
+	}
+
+	async fn get_org_repos(
+		&self,
+		org_name: &str,
+		option: Option<OrgRepoListOptions>,
+	) -> Result<Vec<RepoInfo>> {
+		let url = format!("{}/orgs/{}/repos", API_URL, org_name);
+		let mut request = HTTP_CLIENT.get(url);
+		let mut params: HashMap<&str, String> = HashMap::new();
+		if let Some(token) = &self.token {
+			request = request.query(&[("access_token", token.as_str())]);
+		}
+		if let Some(option) = option {
+			let per_page = option.per_page.unwrap_or_default().min(100);
+			params.insert("per_page", per_page.to_string());
+			let page = option.page.unwrap_or_default();
+			params.insert("page", page.to_string());
+		}
+		let resp = request.query(&params).send().await?;
+		let repo_infos: Vec<JsonValue> = resp.json().await?;
+		Ok(repo_infos.into_iter().map(|v| v.into()).collect())
+	}
+
+	async fn get_org_avatar_url(&self, org_name: &str) -> Result<String> {
+		let url = format!("{}/api/v2/groups/{}", WEB_API_URL, org_name);
+		let resp = HTTP_CLIENT.get(url).header("Referer", BASE_URL).send().await?;
+		let org_info: Value = resp.json().await?;
+		let avatar_url = org_info.get("avatar").and_then(|v| v.as_str()).unwrap().to_string();
+		Ok(avatar_url)
 	}
 
 	async fn get_repo_info(&self, repo_path: (&str, &str)) -> Result<RepoInfo> {
@@ -146,8 +198,9 @@ impl Client for GitCodeClient {
 		if let Some(token) = &self.token {
 			params.insert("access_token", token.to_owned());
 		}
-		params.insert("type", "owner".to_string());
+
 		params.insert("sort", "pushed".to_string());
+
 		if let Some(option) = option {
 			let per_page = option.per_page.unwrap_or_default().min(100);
 			params.insert("per_page", per_page.to_string());
@@ -171,8 +224,9 @@ impl Client for GitCodeClient {
 		if let Some(token) = &self.token {
 			params.insert("access_token", token.to_owned());
 		}
-		params.insert("type", "owner".to_string());
+
 		params.insert("sort", "pushed".to_string());
+
 		if let Some(option) = option {
 			let per_page = option.per_page.unwrap_or_default().min(100);
 			params.insert("per_page", per_page.to_string());
@@ -282,4 +336,15 @@ impl Client for GitCodeClient {
 		let commit_infos: Vec<JsonValue> = resp.json().await?;
 		Ok(commit_infos.into_iter().map(|v| v.into()).collect())
 	}
+}
+
+async fn get_user_repo_count(user_name: &str) -> Result<u64> {
+	let mut url =
+		Url::parse(format!("{}/api/v2/projects/profile/{}", WEB_API_URL, user_name).as_str())?;
+	url.query_pairs_mut().append_pair("repo_query_type", "created");
+	let request = HTTP_CLIENT.get(url).header("Referer", BASE_URL);
+	let resp = request.send().await?;
+	let repo_info: JsonValue = resp.json().await?;
+	let repo_count = repo_info.0.get("total").and_then(|total| total.as_u64()).unwrap_or(0);
+	Ok(repo_count)
 }
