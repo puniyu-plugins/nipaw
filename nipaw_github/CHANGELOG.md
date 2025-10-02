@@ -1,5 +1,12 @@
 # 变更日志
 
+## [0.4.1](https://github.com/puniyu-plugins/nipaw/compare/github-v0.4.0...github-v0.4.1) (2025-10-02)
+
+
+### 🔧 其他更新
+
+* **user:** 将用户昵称字段改为可选 ([8c9fac1](https://github.com/puniyu-plugins/nipaw/commit/8c9fac1aa0f47e825b8665ed4f0bb69c84a2b201))
+
 ## [0.4.0](https://github.com/puniyu-plugins/nipaw/compare/github-v0.3.3...github-v0.4.0) (2025-10-02)
 
 
