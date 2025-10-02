@@ -17,16 +17,16 @@ pub struct CommitInfo {
 #[napi(object)]
 pub struct CommitData {
 	/// 作者信息
-	pub author: UserInfo,
+	pub author: CommitUserInfo,
 	/// 提交者信息
-	pub committer: UserInfo,
+	pub committer: CommitUserInfo,
 	/// 提交信息
 	pub message: String,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
 #[napi(object)]
-pub struct UserInfo {
+pub struct CommitUserInfo {
 	/// 用户名
 	pub name: String,
 	/// 邮箱
@@ -64,7 +64,7 @@ impl From<nipaw_core::types::commit::CommitData> for CommitData {
 	}
 }
 
-impl From<nipaw_core::types::commit::UserInfo> for UserInfo {
+impl From<nipaw_core::types::commit::UserInfo> for CommitUserInfo {
 	fn from(value: nipaw_core::types::commit::UserInfo) -> Self {
 		Self {
 			name: value.name,
