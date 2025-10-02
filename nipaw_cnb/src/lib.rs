@@ -2,27 +2,30 @@ mod client;
 mod common;
 mod middleware;
 
+pub use nipaw_core::Client;
+
 use crate::{
 	client::{HTTP_CLIENT, PROXY_URL},
 	common::JsonValue,
 };
 use async_trait::async_trait;
 use chrono::{Datelike, Local};
-pub use nipaw_core::Client;
-use nipaw_core::option::CommitListOptions;
-use nipaw_core::types::commit::CommitInfo;
-use nipaw_core::types::user::ContributionResult;
 use nipaw_core::{
-	Error,
-	option::ReposListOptions,
-	types::{repo::RepoInfo, user::UserInfo},
+	Result,
+	error::Error,
+	option::{CommitListOptions, ReposListOptions},
+	types::{
+		commit::CommitInfo,
+		repo::RepoInfo,
+		user::{ContributionResult, UserInfo},
+	},
 };
 use reqwest::Url;
 use serde_json::Value;
 use std::collections::HashMap;
 
-static BASE_URL: &str = "https://cnb.cool";
-static API_URL: &str = "https://api.cnb.cool";
+const BASE_URL: &str = "https://cnb.cool";
+const API_URL: &str = "https://api.cnb.cool";
 
 #[derive(Debug, Default)]
 pub struct CnbClient {
@@ -37,7 +40,7 @@ impl CnbClient {
 
 #[async_trait]
 impl Client for CnbClient {
-	fn set_token(&mut self, token: &str) -> Result<(), Error> {
+	fn set_token(&mut self, token: &str) -> Result<()> {
 		if token.is_empty() {
 			return Err(Error::TokenEmpty);
 		}
@@ -45,12 +48,12 @@ impl Client for CnbClient {
 		Ok(())
 	}
 
-	fn set_proxy(&mut self, proxy: &str) -> Result<(), Error> {
+	fn set_proxy(&mut self, proxy: &str) -> Result<()> {
 		PROXY_URL.set(proxy.to_string()).unwrap();
 		Ok(())
 	}
 
-	async fn get_user_info(&self) -> Result<UserInfo, Error> {
+	async fn get_user_info(&self) -> Result<UserInfo> {
 		if self.token.is_none() {
 			return Err(Error::TokenEmpty);
 		}
@@ -72,7 +75,7 @@ impl Client for CnbClient {
 		Ok(user_info.into())
 	}
 
-	async fn get_user_info_with_name(&self, user_name: &str) -> Result<UserInfo, Error> {
+	async fn get_user_info_with_name(&self, user_name: &str) -> Result<UserInfo> {
 		let url = format!("{}/users/{}", API_URL, user_name);
 		let mut request = HTTP_CLIENT.get(url);
 		if let Some(token) = &self.token {
@@ -92,14 +95,14 @@ impl Client for CnbClient {
 		Ok(user_info.into())
 	}
 
-	async fn get_user_avatar_url(&self, user_name: &str) -> Result<String, Error> {
+	async fn get_user_avatar_url(&self, user_name: &str) -> Result<String> {
 		let url = format!("{}/users/{}/avatar/l", BASE_URL, user_name);
 		let resp = HTTP_CLIENT.get(url).send().await?;
 		let avatar_url = resp.url().to_string();
 		Ok(avatar_url)
 	}
 
-	async fn get_user_contribution(&self, user_name: &str) -> Result<ContributionResult, Error> {
+	async fn get_user_contribution(&self, user_name: &str) -> Result<ContributionResult> {
 		let mut url = Url::parse(&format!("{}/users/{}/calendar", BASE_URL, user_name))?;
 		let year = Local::now().year();
 		url.query_pairs_mut().append_pair("year", &year.to_string());
@@ -109,7 +112,7 @@ impl Client for CnbClient {
 		Ok(contribution_result.into())
 	}
 
-	async fn get_repo_info(&self, repo_path: (&str, &str)) -> Result<RepoInfo, Error> {
+	async fn get_repo_info(&self, repo_path: (&str, &str)) -> Result<RepoInfo> {
 		let url = format!("{}/repos/{}/{}", API_URL, repo_path.0, repo_path.1);
 		let mut request = HTTP_CLIENT.get(url);
 		if let Some(token) = &self.token {
@@ -124,7 +127,7 @@ impl Client for CnbClient {
 		&self,
 		repo_path: (&str, &str),
 		use_token: Option<bool>,
-	) -> Result<String, Error> {
+	) -> Result<String> {
 		match use_token {
 			Some(true) => {
 				if self.token.is_none() {
@@ -162,10 +165,7 @@ impl Client for CnbClient {
 		}
 	}
 
-	async fn get_user_repos(
-		&self,
-		option: Option<ReposListOptions>,
-	) -> Result<Vec<RepoInfo>, Error> {
+	async fn get_user_repos(&self, option: Option<ReposListOptions>) -> Result<Vec<RepoInfo>> {
 		let url = format!("{}/user/repos", API_URL);
 		let mut request = HTTP_CLIENT.get(url);
 		if let Some(token) = &self.token {
@@ -189,7 +189,7 @@ impl Client for CnbClient {
 		&self,
 		user_name: &str,
 		option: Option<ReposListOptions>,
-	) -> Result<Vec<RepoInfo>, Error> {
+	) -> Result<Vec<RepoInfo>> {
 		let url = format!("{}/users/{}/repos", API_URL, user_name);
 		let mut request = HTTP_CLIENT.get(url);
 		if let Some(token) = &self.token {
@@ -214,7 +214,7 @@ impl Client for CnbClient {
 		&self,
 		repo_path: (&str, &str),
 		sha: Option<&str>,
-	) -> Result<CommitInfo, Error> {
+	) -> Result<CommitInfo> {
 		let url = format!(
 			"{}/{}/{}/-/git/commits/{}",
 			API_URL,
@@ -277,7 +277,7 @@ impl Client for CnbClient {
 		&self,
 		repo_path: (&str, &str),
 		option: Option<CommitListOptions>,
-	) -> Result<Vec<CommitInfo>, Error> {
+	) -> Result<Vec<CommitInfo>> {
 		let url = format!("{}/{}/{}/-/commits", API_URL, repo_path.0, repo_path.1);
 		let mut request = HTTP_CLIENT.get(url);
 		if let Some(token) = &self.token {

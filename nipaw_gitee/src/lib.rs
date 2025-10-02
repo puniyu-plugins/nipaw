@@ -2,18 +2,19 @@ mod client;
 mod common;
 mod middleware;
 
-use crate::common::Html;
+pub use nipaw_core::Client;
+
 use crate::{
 	client::{HTTP_CLIENT, PROXY_URL},
-	common::JsonValue,
+	common::{Html, JsonValue},
 };
 use async_trait::async_trait;
-pub use nipaw_core::Client;
-use nipaw_core::option::{CommitListOptions, ReposListOptions};
-use nipaw_core::types::commit::CommitInfo;
 use nipaw_core::{
-	Error,
+	Result,
+	error::Error,
+	option::{CommitListOptions, ReposListOptions},
 	types::{
+		commit::CommitInfo,
 		repo::RepoInfo,
 		user::{ContributionResult, UserInfo},
 	},
@@ -21,8 +22,8 @@ use nipaw_core::{
 use serde_json::Value;
 use std::collections::HashMap;
 
-static API_URL: &str = "https://gitee.com/api/v5";
-static BASE_URL: &str = "https://gitee.com";
+const API_URL: &str = "https://gitee.com/api/v5";
+const BASE_URL: &str = "https://gitee.com";
 
 #[derive(Debug, Default)]
 pub struct GiteeClient {
@@ -37,7 +38,7 @@ impl GiteeClient {
 
 #[async_trait]
 impl Client for GiteeClient {
-	fn set_token(&mut self, token: &str) -> Result<(), Error> {
+	fn set_token(&mut self, token: &str) -> Result<()> {
 		if token.is_empty() {
 			return Err(Error::TokenEmpty);
 		}
@@ -45,12 +46,12 @@ impl Client for GiteeClient {
 		Ok(())
 	}
 
-	fn set_proxy(&mut self, proxy: &str) -> Result<(), Error> {
+	fn set_proxy(&mut self, proxy: &str) -> Result<()> {
 		PROXY_URL.set(proxy.to_string()).unwrap();
 		Ok(())
 	}
 
-	async fn get_user_info(&self) -> Result<UserInfo, Error> {
+	async fn get_user_info(&self) -> Result<UserInfo> {
 		if self.token.is_none() {
 			return Err(Error::TokenEmpty);
 		}
@@ -63,7 +64,7 @@ impl Client for GiteeClient {
 		Ok(user_info.into())
 	}
 
-	async fn get_user_info_with_name(&self, user_name: &str) -> Result<UserInfo, Error> {
+	async fn get_user_info_with_name(&self, user_name: &str) -> Result<UserInfo> {
 		let url = format!("{}/users/{}", API_URL, user_name);
 		let mut request = HTTP_CLIENT.get(url);
 		if let Some(token) = &self.token {
@@ -74,7 +75,7 @@ impl Client for GiteeClient {
 		Ok(user_info.into())
 	}
 
-	async fn get_user_avatar_url(&self, user_name: &str) -> Result<String, Error> {
+	async fn get_user_avatar_url(&self, user_name: &str) -> Result<String> {
 		let url = format!("{}/users/{}/detail", BASE_URL, user_name);
 		let request = HTTP_CLIENT.get(url).header("Referer", BASE_URL);
 		let resp = request.send().await?;
@@ -89,7 +90,7 @@ impl Client for GiteeClient {
 		Ok(avatar_url)
 	}
 
-	async fn get_user_contribution(&self, user_name: &str) -> Result<ContributionResult, Error> {
+	async fn get_user_contribution(&self, user_name: &str) -> Result<ContributionResult> {
 		let url = format!("{}/{}", BASE_URL, user_name);
 		let request = HTTP_CLIENT
 			.get(url)
@@ -100,7 +101,7 @@ impl Client for GiteeClient {
 		Ok(html.into())
 	}
 
-	async fn get_repo_info(&self, repo_path: (&str, &str)) -> Result<RepoInfo, Error> {
+	async fn get_repo_info(&self, repo_path: (&str, &str)) -> Result<RepoInfo> {
 		let url = format!("{}/repos/{}/{}", API_URL, repo_path.0, repo_path.1);
 		let mut request = HTTP_CLIENT.get(url);
 		if let Some(token) = &self.token {
@@ -115,7 +116,7 @@ impl Client for GiteeClient {
 		&self,
 		repo_path: (&str, &str),
 		use_token: Option<bool>,
-	) -> Result<String, Error> {
+	) -> Result<String> {
 		match use_token {
 			Some(true) => {
 				if self.token.is_none() {
@@ -155,10 +156,7 @@ impl Client for GiteeClient {
 		}
 	}
 
-	async fn get_user_repos(
-		&self,
-		option: Option<ReposListOptions>,
-	) -> Result<Vec<RepoInfo>, Error> {
+	async fn get_user_repos(&self, option: Option<ReposListOptions>) -> Result<Vec<RepoInfo>> {
 		let url = format!("{}/user/repos", API_URL);
 		let request = HTTP_CLIENT.get(url);
 		let mut params: HashMap<&str, String> = HashMap::new();
@@ -184,7 +182,7 @@ impl Client for GiteeClient {
 		&self,
 		user_name: &str,
 		option: Option<ReposListOptions>,
-	) -> Result<Vec<RepoInfo>, Error> {
+	) -> Result<Vec<RepoInfo>> {
 		let url = format!("{}/users/{}/repos", API_URL, user_name);
 		let request = HTTP_CLIENT.get(url);
 		let mut params: HashMap<&str, String> = HashMap::new();
@@ -210,7 +208,7 @@ impl Client for GiteeClient {
 		&self,
 		repo_path: (&str, &str),
 		sha: Option<&str>,
-	) -> Result<CommitInfo, Error> {
+	) -> Result<CommitInfo> {
 		let url = format!(
 			"{}/repos/{}/{}/commits/{}",
 			API_URL,
@@ -264,7 +262,7 @@ impl Client for GiteeClient {
 		&self,
 		repo_path: (&str, &str),
 		option: Option<CommitListOptions>,
-	) -> Result<Vec<CommitInfo>, Error> {
+	) -> Result<Vec<CommitInfo>> {
 		let url = format!("{}/repos/{}/{}/commits", API_URL, repo_path.0, repo_path.1);
 		let request = HTTP_CLIENT.get(url);
 		let mut params: HashMap<&str, String> = HashMap::new();
