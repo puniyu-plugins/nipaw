@@ -1,8 +1,8 @@
-use crate::types::commit::CommitInfo;
 use crate::{
 	error::CoreError,
-	option::ReposListOptions,
+	option::{CommitListOptions, ReposListOptions},
 	types::{
+		commit::CommitInfo,
 		repo::RepoInfo,
 		user::{ContributionResult, UserInfo},
 	},
@@ -76,7 +76,7 @@ pub trait Client: Send + Sync {
 	/// ## 说明
 	/// * 当 `use_token` 为 `true` 时, 会走OPENAPI获取仓库默认分支, 否则走WEBAPI获取仓库默认分支
 	///
-	async fn get_default_branch(
+	async fn get_repo_default_branch(
 		&self,
 		repo_path: (&str, &str),
 		use_token: Option<bool>,
@@ -117,4 +117,15 @@ pub trait Client: Send + Sync {
 		repo_path: (&str, &str),
 		sha: Option<&str>,
 	) -> Result<CommitInfo, CoreError>;
+
+	/// 获取仓库所有提交信息
+	///
+	/// # 参数
+	/// * `repo_path` - 仓库路径，格式为 `(owner, repo)`
+	/// * `option` - 获取提交列表选项, 详见 [CommitListOptions]
+	async fn get_commit_infos(
+		&self,
+		repo_path: (&str, &str),
+		option: Option<CommitListOptions>,
+	) -> Result<Vec<CommitInfo>, CoreError>;
 }

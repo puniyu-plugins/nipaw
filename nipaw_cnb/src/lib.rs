@@ -9,6 +9,7 @@ use crate::{
 use async_trait::async_trait;
 use chrono::{Datelike, Local};
 pub use nipaw_core::Client;
+use nipaw_core::option::CommitListOptions;
 use nipaw_core::types::commit::CommitInfo;
 use nipaw_core::types::user::ContributionResult;
 use nipaw_core::{
@@ -122,7 +123,7 @@ impl Client for CnbClient {
 		Ok(repo_info.into())
 	}
 
-	async fn get_default_branch(
+	async fn get_repo_default_branch(
 		&self,
 		repo_path: (&str, &str),
 		use_token: Option<bool>,
@@ -273,5 +274,39 @@ impl Client for CnbClient {
 			committer.insert("avatar_url".to_string(), Value::String(avatar_url));
 		}
 		Ok(commit_info.into())
+	}
+
+	async fn get_commit_infos(
+		&self,
+		repo_path: (&str, &str),
+		option: Option<CommitListOptions>,
+	) -> Result<Vec<CommitInfo>, CoreError> {
+		let url = format!("{}/{}/{}/-/commits", API_URL, repo_path.0, repo_path.1);
+		let mut request = HTTP_CLIENT.get(url);
+		if let Some(token) = &self.token {
+			request = request.bearer_auth(token);
+		}
+		let mut params: HashMap<&str, String> = HashMap::new();
+		if let Some(option) = option {
+			let per_page = option.per_page.unwrap_or_default().min(100);
+			params.insert("per_page", per_page.to_string());
+			let page = option.page.unwrap_or_default();
+			params.insert("page", page.to_string());
+			if let Some(sha) = option.sha {
+				params.insert("sha", sha.to_string());
+			}
+			if let Some(author) = option.author {
+				params.insert("author", author.to_string());
+			}
+			if let Some(since) = option.since {
+				params.insert("since", since.to_rfc3339());
+			}
+			if let Some(until) = option.until {
+				params.insert("until", until.to_rfc3339());
+			}
+		}
+		let resp = request.query(&params).send().await?;
+		let commit_infos: Vec<JsonValue> = resp.json().await?;
+		Ok(commit_infos.into_iter().map(|v| v.into()).collect())
 	}
 }

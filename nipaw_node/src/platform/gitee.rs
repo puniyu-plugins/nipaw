@@ -1,6 +1,6 @@
 use crate::{
 	common::RT_RUNTIME,
-	option::ReposListOptions,
+	option::{CommitListOptions, ReposListOptions},
 	types::{
 		commit::CommitInfo,
 		repo::RepoInfo,
@@ -24,6 +24,10 @@ pub struct GiteeClient;
 
 #[napi]
 impl GiteeClient {
+	/// 设置访问令牌
+	///
+	/// ## 参数
+	/// - `token` 访问令牌
 	#[napi]
 	pub fn set_token(&self, token: String) -> napi::Result<()> {
 		let rt = RT_RUNTIME.lock().unwrap();
@@ -36,6 +40,12 @@ impl GiteeClient {
 		})
 	}
 
+	/// 设置代理
+	///
+	/// ## 参数
+	/// - `proxy` 代理地址
+	///
+	/// 支持http,https,socks5协议
 	#[napi]
 	pub fn set_proxy(&self, proxy: String) -> napi::Result<()> {
 		let rt = RT_RUNTIME.lock().unwrap();
@@ -47,6 +57,8 @@ impl GiteeClient {
 			Ok(())
 		})
 	}
+
+	/// 获取当前登录用户信息
 	#[napi]
 	pub async fn get_user_info(&self) -> napi::Result<UserInfo> {
 		let client = create_client().await;
@@ -57,6 +69,10 @@ impl GiteeClient {
 		Ok(user_info.into())
 	}
 
+	/// 获取指定用户信息
+	///
+	/// ## 参数
+	/// - `user_name` 用户名称
 	#[napi]
 	pub async fn get_user_info_with_name(&self, name: String) -> napi::Result<UserInfo> {
 		let client = create_client().await;
@@ -67,6 +83,10 @@ impl GiteeClient {
 		Ok(user_info.into())
 	}
 
+	/// 获取指定用户贡献信息
+	///
+	/// ## 参数
+	/// - `user_name` 用户名称
 	#[napi]
 	pub async fn get_user_contribution(
 		&self,
@@ -80,6 +100,10 @@ impl GiteeClient {
 		Ok(contribution.into())
 	}
 
+	/// 获取指定用户头像地址
+	///
+	/// ## 参数
+	/// - `user_name` 用户名称
 	#[napi]
 	pub async fn get_user_avatar_url(&self, user_name: String) -> napi::Result<String> {
 		let client = create_client().await;
@@ -90,6 +114,11 @@ impl GiteeClient {
 		Ok(avatar_url)
 	}
 
+	/// 获取仓库信息
+	///
+	/// ## 参数
+	/// - `owner` 仓库所有者
+	/// - `repo` 仓库名称
 	#[napi]
 	pub async fn get_repo_info(&self, owner: String, repo: String) -> napi::Result<RepoInfo> {
 		let client = create_client().await;
@@ -100,8 +129,16 @@ impl GiteeClient {
 		Ok(repo_info.into())
 	}
 
+	/// 获取仓库默认分支
+	///
+	/// ## 参数
+	/// - `owner` 仓库所有者
+	/// - `repo` 仓库名称
+	/// - `use_token` 是否使用令牌, 默认为 `false`
+	///
+	/// 当设置为 `true` 时, 会使用OPENAPI获取, 否则使用WEB API获取
 	#[napi]
-	pub async fn get_default_branch(
+	pub async fn get_repo_default_branch(
 		&self,
 		owner: String,
 		repo: String,
@@ -109,12 +146,18 @@ impl GiteeClient {
 	) -> napi::Result<String> {
 		let client = create_client().await;
 		let default_branch = client
-			.get_default_branch((owner.as_str(), repo.as_str()), use_token)
+			.get_repo_default_branch((owner.as_str(), repo.as_str()), use_token)
 			.await
 			.map_err(|e| napi::Error::from_reason(format!("{:?}", e)))?;
 		Ok(default_branch)
 	}
 
+	/// 获取指定用户仓库列表
+	///
+	/// ## 参数
+	/// - `user_name` 用户名称
+	/// - `option` 仓库列表选项
+	///
 	#[napi]
 	pub async fn get_user_repos(
 		&self,
@@ -128,6 +171,12 @@ impl GiteeClient {
 		Ok(repos_list.into_iter().map(|repo| repo.into()).collect())
 	}
 
+	/// 获取指定用户仓库列表
+	///
+	/// ## 参数
+	/// - `user_name` 用户名称
+	/// - `option` 仓库列表选项
+	///
 	#[napi]
 	pub async fn get_user_repos_with_name(
 		&self,
@@ -142,8 +191,14 @@ impl GiteeClient {
 		Ok(repos_list.into_iter().map(|repo| repo.into()).collect())
 	}
 
+	/// 获取仓库提交信息
+	///
+	/// ## 参数
+	/// - `owner` 仓库所有者
+	/// - `repo` 仓库名称
+	/// - `sha` 提交SHA, 如果不设置则会获取默认分支的最新提交
 	#[napi]
-	pub async fn get_commit(
+	pub async fn get_commit_info(
 		&self,
 		owner: String,
 		repo: String,
@@ -155,5 +210,26 @@ impl GiteeClient {
 			.await
 			.map_err(|e| napi::Error::from_reason(format!("{:?}", e)))?;
 		Ok(commit_info.into())
+	}
+
+	/// 获取仓库提交列表
+	///
+	/// ## 参数
+	/// - `owner` 仓库所有者
+	/// - `repo` 仓库名称
+	/// - `option` 提交列表选项
+	#[napi]
+	pub async fn get_commit_infos(
+		&self,
+		owner: String,
+		repo: String,
+		option: Option<CommitListOptions>,
+	) -> napi::Result<Vec<CommitInfo>> {
+		let client = create_client().await;
+		let commit_infos = client
+			.get_commit_infos((owner.as_str(), repo.as_str()), option.map(|o| o.into()))
+			.await
+			.map_err(|e| napi::Error::from_reason(format!("{:?}", e)))?;
+		Ok(commit_infos.into_iter().map(|v| v.into()).collect())
 	}
 }
