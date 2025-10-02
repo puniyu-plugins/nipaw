@@ -1,5 +1,12 @@
 # 变更日志
 
+## [0.5.0](https://github.com/puniyu-plugins/nipaw/compare/cnb-v0.4.1...cnb-v0.5.0) (2025-10-02)
+
+
+### ✨ 新功能
+
+* **core:** 添加获取仓库提交列表功能 ([0bc8a0a](https://github.com/puniyu-plugins/nipaw/commit/0bc8a0a8ae385cf7d53a2e40c8990f5c89262aac))
+
 ## [0.4.1](https://github.com/puniyu-plugins/nipaw/compare/cnb-v0.4.0...cnb-v0.4.1) (2025-10-02)
 
 

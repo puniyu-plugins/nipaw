@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.2.0](https://github.com/puniyu-plugins/nipaw/compare/node-v1.1.2...node-v1.2.0) (2025-10-02)
+
+
+### ✨ 新功能
+
+* **core:** 添加获取仓库提交列表功能 ([0bc8a0a](https://github.com/puniyu-plugins/nipaw/commit/0bc8a0a8ae385cf7d53a2e40c8990f5c89262aac))
+
+
+### 🐛 错误修复
+
+* **types:** 修复node结构体类型重复 ([c63cc28](https://github.com/puniyu-plugins/nipaw/commit/c63cc28082029d912cd02e36fbf7ad7cea434d76))
+
 ## [1.1.2](https://github.com/puniyu-plugins/nipaw/compare/node-v1.1.1...node-v1.1.2) (2025-10-02)
 
 
