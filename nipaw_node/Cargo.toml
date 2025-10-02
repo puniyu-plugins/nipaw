@@ -19,6 +19,7 @@ napi = { version = "3.0.0", features = ["chrono_date", "async"] }
 napi-derive = "3.0.0"
 serde.workspace = true
 chrono.workspace = true
+thiserror.workspace = true
 
 nipaw_core.workspace = true
 

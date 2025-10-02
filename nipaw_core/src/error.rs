@@ -1,7 +1,7 @@
 use thiserror::Error;
 
 #[derive(Debug, Error)]
-pub enum CoreError {
+pub enum Error {
 	#[error("set token is empty")]
 	TokenEmpty,
 	#[error("request error: {0}")]

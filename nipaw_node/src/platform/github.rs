@@ -1,5 +1,6 @@
 use crate::{
 	common::RT_RUNTIME,
+	error::Error,
 	option::{CommitListOptions, ReposListOptions},
 	types::{
 		commit::CommitInfo,
@@ -29,13 +30,11 @@ impl GitHubClient {
 	/// ## 参数
 	/// - `token` 访问令牌
 	#[napi]
-	pub fn set_token(&self, token: String) -> napi::Result<()> {
+	pub fn set_token(&self, token: String) -> Result<(), Error> {
 		let rt = RT_RUNTIME.lock().unwrap();
 		rt.block_on(async {
 			let mut client = GITHUB_CLIENT.write().await;
-			client
-				.set_token(token.as_str())
-				.map_err(|e| napi::Error::from_reason(format!("{:?}", e)))?;
+			client.set_token(token.as_str())?;
 			Ok(())
 		})
 	}
@@ -47,25 +46,20 @@ impl GitHubClient {
 	///
 	/// 支持http,https,socks5协议
 	#[napi]
-	pub fn set_proxy(&self, proxy: String) -> napi::Result<()> {
+	pub fn set_proxy(&self, proxy: String) -> Result<(), Error> {
 		let rt = RT_RUNTIME.lock().unwrap();
 		rt.block_on(async {
 			let mut client = GITHUB_CLIENT.write().await;
-			client
-				.set_proxy(proxy.as_str())
-				.map_err(|e| napi::Error::from_reason(format!("{:?}", e)))?;
+			client.set_proxy(proxy.as_str())?;
 			Ok(())
 		})
 	}
 
 	/// 获取当前登录用户信息
 	#[napi]
-	pub async fn get_user_info(&self) -> napi::Result<UserInfo> {
+	pub async fn get_user_info(&self) -> Result<UserInfo, Error> {
 		let client = create_client().await;
-		let user_info = client
-			.get_user_info()
-			.await
-			.map_err(|e| napi::Error::from_reason(format!("{:?}", e)))?;
+		let user_info = client.get_user_info().await?;
 		Ok(user_info.into())
 	}
 
@@ -74,12 +68,9 @@ impl GitHubClient {
 	/// ## 参数
 	/// - `user_name` 用户名称
 	#[napi]
-	pub async fn get_user_info_with_name(&self, name: String) -> napi::Result<UserInfo> {
+	pub async fn get_user_info_with_name(&self, name: String) -> Result<UserInfo, Error> {
 		let client = create_client().await;
-		let user_info = client
-			.get_user_info_with_name(name.as_str())
-			.await
-			.map_err(|e| napi::Error::from_reason(format!("{:?}", e)))?;
+		let user_info = client.get_user_info_with_name(name.as_str()).await?;
 		Ok(user_info.into())
 	}
 
@@ -91,12 +82,9 @@ impl GitHubClient {
 	pub async fn get_user_contribution(
 		&self,
 		user_name: String,
-	) -> napi::Result<ContributionResult> {
+	) -> Result<ContributionResult, Error> {
 		let client = create_client().await;
-		let contribution = client
-			.get_user_contribution(user_name.as_str())
-			.await
-			.map_err(|e| napi::Error::from_reason(format!("{:?}", e)))?;
+		let contribution = client.get_user_contribution(user_name.as_str()).await?;
 		Ok(contribution.into())
 	}
 
@@ -105,12 +93,9 @@ impl GitHubClient {
 	/// ## 参数
 	/// - `user_name` 用户名称
 	#[napi]
-	pub async fn get_user_avatar_url(&self, user_name: String) -> napi::Result<String> {
+	pub async fn get_user_avatar_url(&self, user_name: String) -> Result<String, Error> {
 		let client = create_client().await;
-		let avatar_url = client
-			.get_user_avatar_url(user_name.as_str())
-			.await
-			.map_err(|e| napi::Error::from_reason(format!("{:?}", e)))?;
+		let avatar_url = client.get_user_avatar_url(user_name.as_str()).await?;
 		Ok(avatar_url)
 	}
 
@@ -124,12 +109,9 @@ impl GitHubClient {
 		&self,
 		repo_owner: String,
 		repo_name: String,
-	) -> napi::Result<RepoInfo> {
+	) -> Result<RepoInfo, Error> {
 		let client = create_client().await;
-		let repo_info = client
-			.get_repo_info((repo_owner.as_str(), repo_name.as_str()))
-			.await
-			.map_err(|e| napi::Error::from_reason(format!("{:?}", e)))?;
+		let repo_info = client.get_repo_info((repo_owner.as_str(), repo_name.as_str())).await?;
 		Ok(repo_info.into())
 	}
 
@@ -147,12 +129,10 @@ impl GitHubClient {
 		owner: String,
 		repo: String,
 		use_token: Option<bool>,
-	) -> napi::Result<String> {
+	) -> Result<String, Error> {
 		let client = create_client().await;
-		let default_branch = client
-			.get_repo_default_branch((owner.as_str(), repo.as_str()), use_token)
-			.await
-			.map_err(|e| napi::Error::from_reason(format!("{:?}", e)))?;
+		let default_branch =
+			client.get_repo_default_branch((owner.as_str(), repo.as_str()), use_token).await?;
 		Ok(default_branch)
 	}
 
@@ -166,12 +146,9 @@ impl GitHubClient {
 	pub async fn get_user_repos(
 		&self,
 		options: Option<ReposListOptions>,
-	) -> napi::Result<Vec<RepoInfo>> {
+	) -> Result<Vec<RepoInfo>, Error> {
 		let client = create_client().await;
-		let repos_list = client
-			.get_user_repos(options.map(|o| o.into()))
-			.await
-			.map_err(|e| napi::Error::from_reason(format!("{:?}", e)))?;
+		let repos_list = client.get_user_repos(options.map(|o| o.into())).await?;
 		Ok(repos_list.into_iter().map(|repo| repo.into()).collect())
 	}
 
@@ -186,12 +163,10 @@ impl GitHubClient {
 		&self,
 		user_name: String,
 		options: Option<ReposListOptions>,
-	) -> napi::Result<Vec<RepoInfo>> {
+	) -> Result<Vec<RepoInfo>, Error> {
 		let client = create_client().await;
-		let repos_list = client
-			.get_user_repos_with_name(user_name.as_str(), options.map(|o| o.into()))
-			.await
-			.map_err(|e| napi::Error::from_reason(format!("{:?}", e)))?;
+		let repos_list =
+			client.get_user_repos_with_name(user_name.as_str(), options.map(|o| o.into())).await?;
 		Ok(repos_list.into_iter().map(|repo| repo.into()).collect())
 	}
 
@@ -207,12 +182,10 @@ impl GitHubClient {
 		owner: String,
 		repo: String,
 		sha: String,
-	) -> napi::Result<CommitInfo> {
+	) -> Result<CommitInfo, Error> {
 		let client = create_client().await;
-		let commit_info = client
-			.get_commit_info((owner.as_str(), repo.as_str()), Some(sha.as_str()))
-			.await
-			.map_err(|e| napi::Error::from_reason(format!("{:?}", e)))?;
+		let commit_info =
+			client.get_commit_info((owner.as_str(), repo.as_str()), Some(sha.as_str())).await?;
 		Ok(commit_info.into())
 	}
 
@@ -228,12 +201,11 @@ impl GitHubClient {
 		owner: String,
 		repo: String,
 		option: Option<CommitListOptions>,
-	) -> napi::Result<Vec<CommitInfo>> {
+	) -> Result<Vec<CommitInfo>, Error> {
 		let client = create_client().await;
 		let commit_infos = client
 			.get_commit_infos((owner.as_str(), repo.as_str()), option.map(|o| o.into()))
-			.await
-			.map_err(|e| napi::Error::from_reason(format!("{:?}", e)))?;
+			.await?;
 		Ok(commit_infos.into_iter().map(|v| v.into()).collect())
 	}
 }

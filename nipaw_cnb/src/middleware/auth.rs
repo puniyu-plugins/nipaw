@@ -1,6 +1,6 @@
 use async_trait::async_trait;
 use http::Extensions;
-use nipaw_core::CoreError;
+use nipaw_core::Error as CoreError;
 use reqwest::{Request, Response, StatusCode};
 use reqwest_middleware::{Error, Middleware, Next, Result};
 

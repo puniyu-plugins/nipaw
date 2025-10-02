@@ -1,5 +1,5 @@
 use crate::{
-	error::CoreError,
+	error::Error,
 	option::{CommitListOptions, ReposListOptions},
 	types::{
 		commit::CommitInfo,
@@ -22,7 +22,7 @@ pub trait Client: Send + Sync {
 	/// ```ignore
 	/// client.set_token("token").unwrap();
 	/// ```
-	fn set_token(&mut self, token: &str) -> Result<(), CoreError>;
+	fn set_token(&mut self, token: &str) -> Result<(), Error>;
 
 	/// 设置代理
 	///
@@ -35,28 +35,27 @@ pub trait Client: Send + Sync {
 	/// ```ignore
 	/// client.set_proxy("http://127.0.0.1:7890").unwrap();
 	/// ```
-	fn set_proxy(&mut self, proxy: &str) -> Result<(), CoreError>;
+	fn set_proxy(&mut self, proxy: &str) -> Result<(), Error>;
 
 	/// 获取当前授权用户信息
-	async fn get_user_info(&self) -> Result<UserInfo, CoreError>;
+	async fn get_user_info(&self) -> Result<UserInfo, Error>;
 
 	/// 根据用户名获取用户信息
 	///
 	/// # 参数
 	///
 	/// * `user_name` - 用户名
-	async fn get_user_info_with_name(&self, user_name: &str) -> Result<UserInfo, CoreError>;
+	async fn get_user_info_with_name(&self, user_name: &str) -> Result<UserInfo, Error>;
 
 	/// 获取用户头像URL
 	///
 	/// # 参数
 	///
 	/// * `user_name` - 用户名
-	async fn get_user_avatar_url(&self, user_name: &str) -> Result<String, CoreError>;
+	async fn get_user_avatar_url(&self, user_name: &str) -> Result<String, Error>;
 
 	/// 获取指定用户贡献数据
-	async fn get_user_contribution(&self, user_name: &str)
-	-> Result<ContributionResult, CoreError>;
+	async fn get_user_contribution(&self, user_name: &str) -> Result<ContributionResult, Error>;
 
 	/// 获取仓库信息
 	///
@@ -64,7 +63,7 @@ pub trait Client: Send + Sync {
 	///
 	/// * `repo_path` - 仓库路径，格式为 `(owner, repo)`
 	///
-	async fn get_repo_info(&self, repo_path: (&str, &str)) -> Result<RepoInfo, CoreError>;
+	async fn get_repo_info(&self, repo_path: (&str, &str)) -> Result<RepoInfo, Error>;
 
 	/// 获取仓库默认分支
 	///
@@ -80,7 +79,7 @@ pub trait Client: Send + Sync {
 		&self,
 		repo_path: (&str, &str),
 		use_token: Option<bool>,
-	) -> Result<String, CoreError>;
+	) -> Result<String, Error>;
 
 	/// 获取用户仓库信息列表
 	///
@@ -91,7 +90,7 @@ pub trait Client: Send + Sync {
 	async fn get_user_repos(
 		&self,
 		option: Option<ReposListOptions>,
-	) -> Result<Vec<RepoInfo>, CoreError>;
+	) -> Result<Vec<RepoInfo>, Error>;
 
 	/// 根据用户名获取用户仓库信息列表
 	///
@@ -103,7 +102,7 @@ pub trait Client: Send + Sync {
 		&self,
 		user_name: &str,
 		option: Option<ReposListOptions>,
-	) -> Result<Vec<RepoInfo>, CoreError>;
+	) -> Result<Vec<RepoInfo>, Error>;
 
 	/// 获取仓库提交信息
 	///
@@ -116,7 +115,7 @@ pub trait Client: Send + Sync {
 		&self,
 		repo_path: (&str, &str),
 		sha: Option<&str>,
-	) -> Result<CommitInfo, CoreError>;
+	) -> Result<CommitInfo, Error>;
 
 	/// 获取仓库所有提交信息
 	///
@@ -127,5 +126,5 @@ pub trait Client: Send + Sync {
 		&self,
 		repo_path: (&str, &str),
 		option: Option<CommitListOptions>,
-	) -> Result<Vec<CommitInfo>, CoreError>;
+	) -> Result<Vec<CommitInfo>, Error>;
 }

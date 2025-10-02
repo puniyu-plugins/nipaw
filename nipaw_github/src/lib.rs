@@ -13,7 +13,7 @@ use nipaw_core::option::{CommitListOptions, ReposListOptions};
 use nipaw_core::types::commit::CommitInfo;
 use nipaw_core::types::user::ContributionResult;
 use nipaw_core::{
-	CoreError,
+	Error,
 	types::{repo::RepoInfo, user::UserInfo},
 };
 use reqwest::Url;
@@ -35,22 +35,22 @@ impl GitHubClient {
 
 #[async_trait]
 impl Client for GitHubClient {
-	fn set_token(&mut self, token: &str) -> Result<(), CoreError> {
+	fn set_token(&mut self, token: &str) -> Result<(), Error> {
 		if token.is_empty() {
-			return Err(CoreError::TokenEmpty);
+			return Err(Error::TokenEmpty);
 		}
 		self.token = Some(token.to_string());
 		Ok(())
 	}
 
-	fn set_proxy(&mut self, proxy: &str) -> Result<(), CoreError> {
+	fn set_proxy(&mut self, proxy: &str) -> Result<(), Error> {
 		PROXY_URL.set(proxy.to_string()).unwrap();
 		Ok(())
 	}
 
-	async fn get_user_info(&self) -> Result<UserInfo, CoreError> {
+	async fn get_user_info(&self) -> Result<UserInfo, Error> {
 		if self.token.is_none() {
-			return Err(CoreError::TokenEmpty);
+			return Err(Error::TokenEmpty);
 		}
 		let url = format!("{}/user", API_URL);
 		let request = HTTP_CLIENT.get(url).bearer_auth(self.token.as_ref().unwrap());
@@ -59,7 +59,7 @@ impl Client for GitHubClient {
 		Ok(user_info.into())
 	}
 
-	async fn get_user_info_with_name(&self, user_name: &str) -> Result<UserInfo, CoreError> {
+	async fn get_user_info_with_name(&self, user_name: &str) -> Result<UserInfo, Error> {
 		let url = format!("{}/users/{}", API_URL, user_name);
 		let mut request = HTTP_CLIENT.get(url);
 		if let Some(token) = &self.token {
@@ -70,7 +70,7 @@ impl Client for GitHubClient {
 		Ok(user_info.into())
 	}
 
-	async fn get_user_avatar_url(&self, user_name: &str) -> Result<String, CoreError> {
+	async fn get_user_avatar_url(&self, user_name: &str) -> Result<String, Error> {
 		let url = format!("{}/{}", BASE_URL, user_name);
 		let request = HTTP_CLIENT.get(url).header("Accept", "image/*");
 		let resp = request.send().await?;
@@ -89,10 +89,7 @@ impl Client for GitHubClient {
 		Ok(avatar_url)
 	}
 
-	async fn get_user_contribution(
-		&self,
-		user_name: &str,
-	) -> Result<ContributionResult, CoreError> {
+	async fn get_user_contribution(&self, user_name: &str) -> Result<ContributionResult, Error> {
 		let mut url = Url::parse(&format!("{}/{}", BASE_URL, user_name))?;
 		url.query_pairs_mut()
 			.append_pair("action", "show")
@@ -109,7 +106,7 @@ impl Client for GitHubClient {
 		Ok(html.into())
 	}
 
-	async fn get_repo_info(&self, repo_path: (&str, &str)) -> Result<RepoInfo, CoreError> {
+	async fn get_repo_info(&self, repo_path: (&str, &str)) -> Result<RepoInfo, Error> {
 		let url = format!("{}/repos/{}/{}", API_URL, repo_path.0, repo_path.1);
 		let mut request = HTTP_CLIENT.get(url);
 		if let Some(token) = &self.token {
@@ -124,11 +121,11 @@ impl Client for GitHubClient {
 		&self,
 		repo_path: (&str, &str),
 		use_token: Option<bool>,
-	) -> Result<String, CoreError> {
+	) -> Result<String, Error> {
 		match use_token {
 			Some(true) => {
 				if self.token.is_none() {
-					return Err(CoreError::TokenEmpty);
+					return Err(Error::TokenEmpty);
 				}
 				let url = format!("{}/repos/{}/{}", API_URL, repo_path.0, repo_path.1);
 				let mut request = HTTP_CLIENT.get(url);
@@ -171,7 +168,7 @@ impl Client for GitHubClient {
 	async fn get_user_repos(
 		&self,
 		option: Option<ReposListOptions>,
-	) -> Result<Vec<RepoInfo>, CoreError> {
+	) -> Result<Vec<RepoInfo>, Error> {
 		let url = format!("{}/user/repos", API_URL);
 		let mut request = HTTP_CLIENT.get(url);
 		let mut params: HashMap<&str, String> = HashMap::new();
@@ -197,7 +194,7 @@ impl Client for GitHubClient {
 		&self,
 		user_name: &str,
 		option: Option<ReposListOptions>,
-	) -> Result<Vec<RepoInfo>, CoreError> {
+	) -> Result<Vec<RepoInfo>, Error> {
 		let url = format!("{}/users/{}/repos", API_URL, user_name);
 		let mut request = HTTP_CLIENT.get(url);
 		let mut params: HashMap<&str, String> = HashMap::new();
@@ -222,7 +219,7 @@ impl Client for GitHubClient {
 		&self,
 		repo_path: (&str, &str),
 		sha: Option<&str>,
-	) -> Result<CommitInfo, CoreError> {
+	) -> Result<CommitInfo, Error> {
 		let url = format!(
 			"{}/repos/{}/{}/commits/{}",
 			API_URL,
@@ -276,7 +273,7 @@ impl Client for GitHubClient {
 		&self,
 		repo_path: (&str, &str),
 		option: Option<CommitListOptions>,
-	) -> Result<Vec<CommitInfo>, CoreError> {
+	) -> Result<Vec<CommitInfo>, Error> {
 		let url = format!("{}/repos/{}/{}/commits", API_URL, repo_path.0, repo_path.1);
 		let mut request = HTTP_CLIENT.get(url);
 		let mut params: HashMap<&str, String> = HashMap::new();
