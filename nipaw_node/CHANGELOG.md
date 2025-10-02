@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.2](https://github.com/puniyu-plugins/nipaw/compare/node-v1.1.1...node-v1.1.2) (2025-10-02)
+
+
+### 🔧 其他更新
+
+* **user:** 将用户昵称字段改为可选 ([8c9fac1](https://github.com/puniyu-plugins/nipaw/commit/8c9fac1aa0f47e825b8665ed4f0bb69c84a2b201))
+
 ## [1.1.1](https://github.com/puniyu-plugins/nipaw/compare/node-v1.1.0...node-v1.1.1) (2025-10-02)
 
 
