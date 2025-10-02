@@ -10,7 +10,7 @@ pub struct UserInfo {
 	/// 登录用户名
 	pub login: String,
 	/// 用户昵称
-	pub name: String,
+	pub name: Option<String>,
 	/// 用户邮箱
 	pub email: Option<String>,
 	/// 用户头像URL
@@ -67,7 +67,11 @@ impl From<nipaw_core::types::user::ContributionResult> for ContributionResult {
 	fn from(value: nipaw_core::types::user::ContributionResult) -> Self {
 		ContributionResult {
 			total: value.total,
-			contributions: value.contributions.into_iter().map(|week| week.into_iter().map(Into::into).collect()).collect(),
+			contributions: value
+				.contributions
+				.into_iter()
+				.map(|week| week.into_iter().map(Into::into).collect())
+				.collect(),
 		}
 	}
 }

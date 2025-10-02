@@ -19,8 +19,11 @@ jobs:
     if: "!startsWith(github.head_ref, 'release-please')"
     runs-on: ubuntu-latest
     outputs:
-      releases_created: ${{ steps.release-please.outputs.releases_created }}
       node: ${{ steps.release-please.outputs['nipaw_node--release_created'] }}
+      github: ${{ steps.release-please.outputs['nipaw_github--release_created'] }}
+      gitee: ${{ steps.release-please.outputs['nipaw_gitee--release_created'] }}
+      gitcode: ${{ steps.release-please.outputs['nipaw_gitcode--release_created'] }}
+      cnb: ${{ steps.release-please.outputs['nipaw_cnb--release_created'] }}
     steps:
       - name: 获取token
         uses: actions/create-github-app-token@v2
@@ -41,7 +44,7 @@ jobs:
   publish-lib:
     runs-on: ubuntu-latest
     needs: [ release ]
-    if: needs.release.outputs.releases_created == 'true'
+    if: ${{ needs.release.outputs.github || needs.release.outputs.gitcode || needs.release.outputs.gitee || needs.release.outputs.cnb }}
     steps:
       - name: 检出代码
         uses: actions/checkout@v5
@@ -55,11 +58,33 @@ jobs:
       - name: 设置 Rust 缓存
         uses: swatinem/rust-cache@v2
 
-      - name: 发布
-        run: |
-          cargo publish --workspace --exclude nipaw_core --exclude nipaw_node
-        env:
-          CARGO_REGISTRY_TOKEN: ${{ secrets.CRATES_API_TOKEN }}
+      - name: 发布nipaw_github
+        if: needs.release.outputs.github
+        uses: katyo/publish-crates@v2
+        with:
+          registry-token: ${{ secrets.CRATES_API_TOKEN }}
+          path: 'nipaw_github'
+
+      - name: 发布nipaw_gitcode
+        if: needs.release.outputs.gitcode
+        uses: katyo/publish-crates@v2
+        with:
+          registry-token: ${{ secrets.CRATES_API_TOKEN }}
+          path: 'nipaw_gitcode'
+
+      - name: 发布nipaw_gitee
+        if: needs.release.outputs.gitee
+        uses: katyo/publish-crates@v2
+        with:
+          registry-token: ${{ secrets.CRATES_API_TOKEN }}
+          path: 'nipaw_gitee'
+
+      - name: 发布nipaw_cnb
+        if: needs.release.outputs.cnb
+        uses: katyo/publish-crates@v2
+        with:
+          registry-token: ${{ secrets.CRATES_API_TOKEN }}
+          path: 'nipaw_cnb'
 
 
   build:

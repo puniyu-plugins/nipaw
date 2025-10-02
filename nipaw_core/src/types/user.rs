@@ -8,7 +8,7 @@ pub struct UserInfo {
 	/// 登录用户名
 	pub login: String,
 	/// 用户昵称
-	pub name: String,
+	pub name: Option<String>,
 	/// 用户邮箱
 	pub email: Option<String>,
 	/// 用户头像URL

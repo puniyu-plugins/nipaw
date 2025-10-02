@@ -17,7 +17,7 @@ impl From<JsonValue> for UserInfo {
 		UserInfo {
 			id: user_info.get("id").and_then(|v| v.as_str()).unwrap().to_string(),
 			login: login.to_string(),
-			name: user_info.get("nickname").and_then(|v| v.as_str()).unwrap().to_string(),
+			name: user_info.get("nickname").and_then(|v| v.as_str()).map(|s| s.to_string()),
 			avatar_url: user_info.get("avatar_url").and_then(|v| v.as_str()).unwrap().to_string(),
 			email: user_info.get("email").and_then(|v| v.as_str()).map(|s| s.to_string()),
 			followers: user_info.get("follower_count").and_then(|v| v.as_u64()).unwrap(),
