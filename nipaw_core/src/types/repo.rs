@@ -13,6 +13,22 @@ pub struct RepoInfo {
 	pub full_name: String,
 	/// 仓库描述
 	pub description: Option<String>,
+	/// 仓库可见性
+	pub visibility: String,
+	/// 是否是fork仓库
+	pub fork: bool,
+	/// 仓库fork数量
+	pub fork_count: u64,
+	/// 是否是公开仓库
+	pub public: bool,
+	/// 是否是私有仓库
+	pub private: bool,
+	/// 仓库语言
+	pub language: Option<String>,
+	/// 仓库星标数量
+	pub star_count: u64,
+	/// 仓库默认分支
+	pub default_branch: String,
 	/// 仓库创建时间
 	pub created_at: DateTime<Utc>,
 	/// 仓库更新时间

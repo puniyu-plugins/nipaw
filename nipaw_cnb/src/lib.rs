@@ -165,32 +165,24 @@ impl Client for CnbClient {
 			request = request.bearer_auth(token);
 		}
 		let resp = request.send().await?;
-		let repo_info: JsonValue = resp.json().await?;
+		let mut repo_info: JsonValue = resp.json().await?;
+		let default_branch =
+			self.get_repo_default_branch((repo_path.0, repo_path.1), Some(true)).await?;
+		repo_info
+			.0
+			.as_object_mut()
+			.unwrap()
+			.insert("default_branch".to_string(), Value::String(default_branch));
 		Ok(repo_info.into())
 	}
 
 	async fn get_repo_default_branch(
 		&self,
 		repo_path: (&str, &str),
-		use_token: Option<bool>,
+		use_web_api: Option<bool>,
 	) -> Result<String> {
-		match use_token {
+		match use_web_api {
 			Some(true) => {
-				if self.token.is_none() {
-					return Err(Error::TokenEmpty);
-				}
-				let url = format!("{}/repos/{}/{}/-/git/head", API_URL, repo_path.0, repo_path.1);
-				let mut request = HTTP_CLIENT.get(url);
-				if let Some(token) = &self.token {
-					request = request.bearer_auth(token);
-				}
-				let resp = request.send().await?;
-				let repo_info: JsonValue = resp.json().await?;
-				let default_branch =
-					repo_info.0.get("name").and_then(|v| v.as_str()).unwrap().to_string();
-				Ok(default_branch)
-			}
-			Some(false) | None => {
 				let url = format!(
 					"{}/repos/{}/{}/-/git/overview-branches?limit=5",
 					BASE_URL, repo_path.0, repo_path.1
@@ -206,6 +198,18 @@ impl Client for CnbClient {
 					.map(|s| s.trim_start_matches("refs/heads/"))
 					.unwrap()
 					.to_string();
+				Ok(default_branch)
+			}
+			Some(false) | None => {
+				let url = format!("{}/repos/{}/{}/-/git/head", API_URL, repo_path.0, repo_path.1);
+				let mut request = HTTP_CLIENT.get(url);
+				if let Some(token) = &self.token {
+					request = request.bearer_auth(token);
+				}
+				let resp = request.send().await?;
+				let repo_info: JsonValue = resp.json().await?;
+				let default_branch =
+					repo_info.0.get("name").and_then(|v| v.as_str()).unwrap().to_string();
 				Ok(default_branch)
 			}
 		}

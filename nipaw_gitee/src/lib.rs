@@ -165,25 +165,10 @@ impl Client for GiteeClient {
 	async fn get_repo_default_branch(
 		&self,
 		repo_path: (&str, &str),
-		use_token: Option<bool>,
+		use_web_api: Option<bool>,
 	) -> Result<String> {
-		match use_token {
+		match use_web_api {
 			Some(true) => {
-				if self.token.is_none() {
-					return Err(Error::TokenEmpty);
-				}
-				let url = format!("{}/repos/{}/{}", API_URL, repo_path.0, repo_path.1);
-				let mut request = HTTP_CLIENT.get(url);
-				if let Some(token) = &self.token {
-					request = request.query(&[("access_token", token.as_str())]);
-				}
-				let resp = request.send().await?;
-				let repo_info: JsonValue = resp.json().await?;
-				let default_branch =
-					repo_info.0.get("default_branch").and_then(|v| v.as_str()).unwrap().to_string();
-				Ok(default_branch)
-			}
-			Some(false) | None => {
 				let url =
 					format!("{}/{}/{}/branches/names.json", BASE_URL, repo_path.0, repo_path.1);
 				let request = HTTP_CLIENT.get(url).header("Referer", BASE_URL);
@@ -201,6 +186,18 @@ impl Client for GiteeClient {
 					.and_then(|branch| branch.get("name").and_then(|v| v.as_str()))
 					.map(|s| s.to_string())
 					.unwrap();
+				Ok(default_branch)
+			}
+			Some(false) | None => {
+				let url = format!("{}/repos/{}/{}", API_URL, repo_path.0, repo_path.1);
+				let mut request = HTTP_CLIENT.get(url);
+				if let Some(token) = &self.token {
+					request = request.query(&[("access_token", token.as_str())]);
+				}
+				let resp = request.send().await?;
+				let repo_info: JsonValue = resp.json().await?;
+				let default_branch =
+					repo_info.0.get("default_branch").and_then(|v| v.as_str()).unwrap().to_string();
 				Ok(default_branch)
 			}
 		}

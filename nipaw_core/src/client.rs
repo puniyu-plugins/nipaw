@@ -101,7 +101,7 @@ pub trait Client: Send + Sync {
 	async fn get_repo_default_branch(
 		&self,
 		repo_path: (&str, &str),
-		use_token: Option<bool>,
+		use_web_api: Option<bool>,
 	) -> Result<String>;
 
 	/// 获取用户仓库信息列表

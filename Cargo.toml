@@ -30,7 +30,7 @@ serde = { version = "1.0.228", features = ["derive"] }
 serde_json = "1.0.145"
 itertools = "0.14.0"
 
-nipaw_core = { path = "nipaw_core", version = "0.3.2" }
+nipaw_core = { path = "nipaw_core", version = "0.3.3" }
 
 [profile.release]
 lto = true

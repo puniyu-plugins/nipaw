@@ -160,26 +160,23 @@ impl Client for GitCodeClient {
 	async fn get_repo_default_branch(
 		&self,
 		repo_path: (&str, &str),
-		use_token: Option<bool>,
+		use_web_api: Option<bool>,
 	) -> Result<String> {
-		let repo_info = match use_token {
+		let repo_info = match use_web_api {
 			Some(true) => {
-				if self.token.is_none() {
-					return Err(Error::TokenEmpty);
-				}
-				let url = format!("{}/repos/{}/{}", API_URL, repo_path.0, repo_path.1);
-				let mut request = HTTP_CLIENT.get(url);
-				if let Some(token) = &self.token {
-					request = request.query(&[("access_token", token.as_str())]);
-				}
+				let url =
+					format!("{}/api/v2/projects/{}%2F{}", WEB_API_URL, repo_path.0, repo_path.1);
+				let request = HTTP_CLIENT.get(url).header("Referer", BASE_URL);
 				let resp = request.send().await?;
 				let repo_info: JsonValue = resp.json().await?;
 				repo_info.0
 			}
 			Some(false) | None => {
-				let url =
-					format!("{}/api/v2/projects/{}%2F{}", WEB_API_URL, repo_path.0, repo_path.1);
-				let request = HTTP_CLIENT.get(url).header("Referer", BASE_URL);
+				let url = format!("{}/repos/{}/{}", API_URL, repo_path.0, repo_path.1);
+				let mut request = HTTP_CLIENT.get(url);
+				if let Some(token) = &self.token {
+					request = request.query(&[("access_token", token.as_str())]);
+				}
 				let resp = request.send().await?;
 				let repo_info: JsonValue = resp.json().await?;
 				repo_info.0

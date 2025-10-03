@@ -153,19 +153,18 @@ impl GitCodeClient {
 	/// ## 参数
 	/// - `owner` 仓库所有者
 	/// - `repo` 仓库名称
-	/// - `use_token` 是否使用令牌, 默认为 `false`
+	/// - `use_web_api` 是否使用WEB API, 默认使用OPEN API获取
 	///
-	/// 当设置为 `true` 时, 会使用OPENAPI获取, 否则使用WEB API获取
 	#[napi]
 	pub async fn get_repo_default_branch(
 		&self,
 		owner: String,
 		repo: String,
-		use_token: Option<bool>,
+		use_web_api: Option<bool>,
 	) -> Result<String, Error> {
 		let client = create_client().await;
 		let default_branch =
-			client.get_repo_default_branch((owner.as_str(), repo.as_str()), use_token).await?;
+			client.get_repo_default_branch((owner.as_str(), repo.as_str()), use_web_api).await?;
 		Ok(default_branch)
 	}
 
