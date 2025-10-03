@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.3.0](https://github.com/puniyu-plugins/nipaw/compare/node-v1.2.0...node-v1.3.0) (2025-10-03)
+
+
+### ✨ 新功能
+
+* **core:** 添加组织信息相关功能支持 ([47730ab](https://github.com/puniyu-plugins/nipaw/commit/47730ab307762f4a63bd3dd6b4007684891df351))
+* **repo:** 重构仓库信息结构并优化默认分支获取逻辑 ([2850050](https://github.com/puniyu-plugins/nipaw/commit/28500500c653ec15103b1442270941a59e243af8))
+
+
+### ♻️ 代码重构
+
+* **core:** 重命名 CoreError为 Error 并更新相关引用 ([0d2f8c4](https://github.com/puniyu-plugins/nipaw/commit/0d2f8c44e654f0f2640929d20b98dbb85c8b7b60))
+
 ## [1.2.0](https://github.com/puniyu-plugins/nipaw/compare/node-v1.1.2...node-v1.2.0) (2025-10-02)
 
 
