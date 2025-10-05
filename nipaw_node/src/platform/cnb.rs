@@ -1,6 +1,6 @@
 use crate::{
+	Result,
 	common::RT_RUNTIME,
-	error::Error,
 	option::{CommitListOptions, OrgRepoListOptions, ReposListOptions},
 	types::{
 		commit::CommitInfo,
@@ -31,7 +31,7 @@ impl CnbClient {
 	/// ## 参数
 	/// - `token` 访问令牌
 	#[napi]
-	pub fn set_token(&self, token: String) -> Result<(), Error> {
+	pub fn set_token(&self, token: String) -> Result<()> {
 		let rt = RT_RUNTIME.lock().unwrap();
 		rt.block_on(async {
 			let mut client = CNB_CLIENT.write().await;
@@ -47,7 +47,7 @@ impl CnbClient {
 	///
 	/// 支持http,https,socks5协议
 	#[napi]
-	pub fn set_proxy(&self, proxy: String) -> Result<(), Error> {
+	pub fn set_proxy(&self, proxy: String) -> Result<()> {
 		let rt = RT_RUNTIME.lock().unwrap();
 		rt.block_on(async {
 			let mut client = CNB_CLIENT.write().await;
@@ -58,7 +58,7 @@ impl CnbClient {
 
 	/// 获取当前登录用户信息
 	#[napi]
-	pub async fn get_user_info(&self) -> Result<UserInfo, Error> {
+	pub async fn get_user_info(&self) -> Result<UserInfo> {
 		let client = create_client().await;
 		let user_info = client.get_user_info().await?;
 		Ok(user_info.into())
@@ -69,7 +69,7 @@ impl CnbClient {
 	/// ## 参数
 	/// - `user_name` 用户名称
 	#[napi]
-	pub async fn get_user_info_with_name(&self, user_name: String) -> Result<UserInfo, Error> {
+	pub async fn get_user_info_with_name(&self, user_name: String) -> Result<UserInfo> {
 		let client = create_client().await;
 		let user_info = client.get_user_info_with_name(user_name.as_str()).await?;
 		Ok(user_info.into())
@@ -80,10 +80,7 @@ impl CnbClient {
 	/// ## 参数
 	/// - `user_name` 用户名称
 	#[napi]
-	pub async fn get_user_contribution(
-		&self,
-		user_name: String,
-	) -> Result<ContributionResult, Error> {
+	pub async fn get_user_contribution(&self, user_name: String) -> Result<ContributionResult> {
 		let client = create_client().await;
 		let contribution = client.get_user_contribution(user_name.as_str()).await?;
 		Ok(contribution.into())
@@ -94,7 +91,7 @@ impl CnbClient {
 	/// ## 参数
 	/// - `org_name` 组织名称
 	#[napi]
-	pub async fn get_org_info(&self, org_name: String) -> Result<OrgInfo, Error> {
+	pub async fn get_org_info(&self, org_name: String) -> Result<OrgInfo> {
 		let client = create_client().await;
 		let org_info = client.get_org_info(org_name.as_str()).await?;
 		Ok(org_info.into())
@@ -110,7 +107,7 @@ impl CnbClient {
 		&self,
 		org_name: String,
 		option: Option<OrgRepoListOptions>,
-	) -> Result<Vec<RepoInfo>, Error> {
+	) -> Result<Vec<RepoInfo>> {
 		let client = create_client().await;
 		let repo_infos = client.get_org_repos(org_name.as_str(), option.map(|o| o.into())).await?;
 		Ok(repo_infos.into_iter().map(|v| v.into()).collect())
@@ -118,7 +115,7 @@ impl CnbClient {
 
 	/// 获取组织头像地址
 	#[napi]
-	pub async fn get_org_avatar_url(&self, org_name: String) -> Result<String, Error> {
+	pub async fn get_org_avatar_url(&self, org_name: String) -> Result<String> {
 		let client = create_client().await;
 		let avatar_url = client.get_org_avatar_url(org_name.as_str()).await?;
 		Ok(avatar_url)
@@ -128,7 +125,7 @@ impl CnbClient {
 	/// ## 参数
 	/// - `user_name` 用户名称
 	#[napi]
-	pub async fn get_user_avatar_url(&self, user_name: String) -> Result<String, Error> {
+	pub async fn get_user_avatar_url(&self, user_name: String) -> Result<String> {
 		let client = create_client().await;
 		let avatar_url = client.get_user_avatar_url(user_name.as_str()).await?;
 		Ok(avatar_url)
@@ -140,7 +137,7 @@ impl CnbClient {
 	/// - `owner` 仓库所有者
 	/// - `repo` 仓库名称
 	#[napi]
-	pub async fn get_repo_info(&self, owner: String, repo: String) -> Result<RepoInfo, Error> {
+	pub async fn get_repo_info(&self, owner: String, repo: String) -> Result<RepoInfo> {
 		let client = create_client().await;
 		let repo_info = client.get_repo_info((owner.as_str(), repo.as_str())).await?;
 		Ok(repo_info.into())
@@ -159,7 +156,7 @@ impl CnbClient {
 		owner: String,
 		repo: String,
 		use_web_api: Option<bool>,
-	) -> Result<String, Error> {
+	) -> Result<String> {
 		let client = create_client().await;
 		let default_branch =
 			client.get_repo_default_branch((owner.as_str(), repo.as_str()), use_web_api).await?;
@@ -173,10 +170,7 @@ impl CnbClient {
 	///
 	/// 如果不设置令牌则会出错
 	#[napi]
-	pub async fn get_user_repos(
-		&self,
-		option: Option<ReposListOptions>,
-	) -> Result<Vec<RepoInfo>, Error> {
+	pub async fn get_user_repos(&self, option: Option<ReposListOptions>) -> Result<Vec<RepoInfo>> {
 		let client = create_client().await;
 		let repo_infos = client.get_user_repos(option.map(|o| o.into())).await?;
 		Ok(repo_infos.into_iter().map(|v| v.into()).collect())
@@ -193,7 +187,7 @@ impl CnbClient {
 		&self,
 		user_name: String,
 		option: Option<ReposListOptions>,
-	) -> Result<Vec<RepoInfo>, Error> {
+	) -> Result<Vec<RepoInfo>> {
 		let client = create_client().await;
 		let repo_infos =
 			client.get_user_repos_with_name(user_name.as_str(), option.map(|o| o.into())).await?;
@@ -212,7 +206,7 @@ impl CnbClient {
 		owner: String,
 		repo: String,
 		sha: Option<String>,
-	) -> Result<CommitInfo, Error> {
+	) -> Result<CommitInfo> {
 		let client = create_client().await;
 		let commit_info =
 			client.get_commit_info((owner.as_str(), repo.as_str()), sha.as_deref()).await?;
@@ -231,7 +225,7 @@ impl CnbClient {
 		owner: String,
 		repo: String,
 		option: Option<CommitListOptions>,
-	) -> Result<Vec<CommitInfo>, Error> {
+	) -> Result<Vec<CommitInfo>> {
 		let client = create_client().await;
 		let commit_infos = client
 			.get_commit_infos((owner.as_str(), repo.as_str()), option.map(|o| o.into()))
