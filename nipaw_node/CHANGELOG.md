@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.4.0](https://github.com/puniyu-plugins/nipaw/compare/node-v1.3.0...node-v1.4.0) (2025-10-08)
+
+
+### ✨ 新功能
+
+* **core:** 添加仓库协作者功能支持 ([ce87b1c](https://github.com/puniyu-plugins/nipaw/commit/ce87b1cebeb6319096718353082759ca1f0d897b))
+
+
+### ♻️ 代码重构
+
+* **node:** 简化平台模块中的错误处理类型 ([40a4222](https://github.com/puniyu-plugins/nipaw/commit/40a42225df28f0dac5e4e1d1ef1a31570b193ed0))
+
 ## [1.3.0](https://github.com/puniyu-plugins/nipaw/compare/node-v1.2.0...node-v1.3.0) (2025-10-03)
 
 
