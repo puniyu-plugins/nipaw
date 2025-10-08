@@ -7,3 +7,4 @@ pub mod option;
 pub mod types;
 
 pub type Result<T> = std::result::Result<T, Error>;
+pub use types::collaborator::CollaboratorPermission;

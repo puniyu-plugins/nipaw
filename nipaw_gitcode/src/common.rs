@@ -1,6 +1,7 @@
 use chrono::{NaiveDate, Utc, Weekday};
 use itertools::Itertools;
 use nipaw_core::types::{
+	collaborator::CollaboratorResult,
 	commit::{CommitData, CommitInfo, StatsInfo, UserInfo as CommitUserInfo},
 	org::OrgInfo,
 	repo::RepoInfo,
@@ -181,6 +182,20 @@ impl From<JsonValue> for OrgInfo {
 				.and_then(|v| v.as_str())
 				.map(|s| s.to_string()),
 			follow_count: org_info.get("followers").and_then(|v| v.as_u64()).unwrap(),
+		}
+	}
+}
+
+impl From<JsonValue> for CollaboratorResult {
+	fn from(json_value: JsonValue) -> Self {
+		let collaborator = json_value.0;
+		CollaboratorResult {
+			login: collaborator.get("login").and_then(|v| v.as_str()).unwrap().to_string(),
+			avatar_url: collaborator
+				.get("avatar_url")
+				.and_then(|v| v.as_str())
+				.unwrap()
+				.to_string(),
 		}
 	}
 }

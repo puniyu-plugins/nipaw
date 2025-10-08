@@ -1,3 +1,4 @@
+pub mod collaborator;
 pub mod commit;
 pub mod org;
 pub mod repo;

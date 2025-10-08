@@ -11,17 +11,18 @@ use crate::{
 use async_trait::async_trait;
 use chrono::{Datelike, Local};
 use nipaw_core::{
-	Result,
+	CollaboratorPermission, Result,
 	error::Error,
 	option::{CommitListOptions, OrgRepoListOptions, ReposListOptions},
 	types::{
+		collaborator::CollaboratorResult,
 		commit::CommitInfo,
 		org::OrgInfo,
 		repo::RepoInfo,
 		user::{ContributionResult, UserInfo},
 	},
 };
-use reqwest::Url;
+use reqwest::{Url, header};
 use serde_json::Value;
 use std::collections::HashMap;
 
@@ -356,5 +357,45 @@ impl Client for CnbClient {
 		let resp = request.query(&params).send().await?;
 		let commit_infos: Vec<JsonValue> = resp.json().await?;
 		Ok(commit_infos.into_iter().map(|v| v.into()).collect())
+	}
+	async fn add_repo_collaborator(
+		&self,
+		repo_path: (&str, &str),
+		user_name: &str,
+		permission: Option<CollaboratorPermission>,
+	) -> Result<CollaboratorResult> {
+		let url = format!("{}/{}/{}/-/members/{}", API_URL, repo_path.0, repo_path.1, user_name);
+		let mut request = HTTP_CLIENT.post(url);
+		if let Some(token) = &self.token {
+			request = request.bearer_auth(token);
+		}
+		let permission = match permission {
+			Some(permission) => match permission {
+				CollaboratorPermission::Admin => "Master",
+				CollaboratorPermission::Push => "Developer",
+				CollaboratorPermission::Pull => "Reporter",
+			},
+			None => "Guest",
+		};
+
+		let body = serde_json::json!({
+			"access_level": permission.to_string(),
+			"is_outside_collaborator": true,
+		});
+		let resp = request
+			.header(header::CONTENT_TYPE, "application/json")
+			.body(body.to_string())
+			.send()
+			.await?;
+		let status_code = resp.status().as_u16();
+		if status_code == 200 {
+			let collaborator = CollaboratorResult {
+				login: user_name.to_string(),
+				avatar_url: self.get_user_avatar_url(user_name).await?,
+			};
+			Ok(collaborator)
+		} else {
+			Err(Error::NotFound)
+		}
 	}
 }

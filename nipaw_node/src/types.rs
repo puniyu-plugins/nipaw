@@ -1,3 +1,4 @@
+pub(crate) mod collaborator;
 pub(crate) mod commit;
 pub(crate) mod org;
 pub(crate) mod repo;

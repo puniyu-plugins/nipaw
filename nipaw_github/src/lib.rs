@@ -9,19 +9,19 @@ use crate::{
 	common::{Html, JsonValue},
 };
 use async_trait::async_trait;
-use nipaw_core::option::OrgRepoListOptions;
-use nipaw_core::types::org::OrgInfo;
 use nipaw_core::{
 	Result,
 	error::Error,
-	option::{CommitListOptions, ReposListOptions},
+	option::{CommitListOptions, OrgRepoListOptions, ReposListOptions},
 	types::{
+		collaborator::{CollaboratorPermission, CollaboratorResult},
 		commit::CommitInfo,
+		org::OrgInfo,
 		repo::RepoInfo,
 		user::{ContributionResult, UserInfo},
 	},
 };
-use reqwest::Url;
+use reqwest::{Url, header};
 use serde_json::Value;
 use std::collections::HashMap;
 
@@ -347,5 +347,40 @@ impl Client for GitHubClient {
 		let resp = request.query(&params).send().await?;
 		let commit_infos: Vec<JsonValue> = resp.json().await?;
 		Ok(commit_infos.into_iter().map(|v| v.into()).collect())
+	}
+
+	async fn add_repo_collaborator(
+		&self,
+		repo_path: (&str, &str),
+		user_name: &str,
+		permission: Option<CollaboratorPermission>,
+	) -> Result<CollaboratorResult> {
+		let url = format!(
+			"{}/repos/{}/{}/collaborators/{}",
+			API_URL, repo_path.0, repo_path.1, user_name
+		);
+		let mut request = HTTP_CLIENT.put(url);
+		if let Some(token) = &self.token {
+			request = request.bearer_auth(token);
+		}
+		let permission = match permission {
+			Some(permission) => match permission {
+				CollaboratorPermission::Admin => "admin".to_string(),
+				CollaboratorPermission::Push => "push".to_string(),
+				CollaboratorPermission::Pull => "pull".to_string(),
+			},
+			None => "pull".to_string(),
+		};
+
+		let body = serde_json::json!({
+			"permission": permission,
+		});
+		let resp = request
+			.header(header::CONTENT_TYPE, "application/json")
+			.body(body.to_string())
+			.send()
+			.await?;
+		let collaborator_result: JsonValue = resp.json().await?;
+		Ok(collaborator_result.into())
 	}
 }

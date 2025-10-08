@@ -9,18 +9,19 @@ use crate::{
 	common::{Html, JsonValue},
 };
 use async_trait::async_trait;
-use nipaw_core::option::OrgRepoListOptions;
-use nipaw_core::types::org::OrgInfo;
 use nipaw_core::{
 	Result,
 	error::Error,
-	option::{CommitListOptions, ReposListOptions},
+	option::{CommitListOptions, OrgRepoListOptions, ReposListOptions},
 	types::{
+		collaborator::{CollaboratorPermission, CollaboratorResult},
 		commit::CommitInfo,
+		org::OrgInfo,
 		repo::RepoInfo,
 		user::{ContributionResult, UserInfo},
 	},
 };
+use reqwest::header;
 use serde_json::Value;
 use std::collections::HashMap;
 
@@ -335,5 +336,46 @@ impl Client for GiteeClient {
 		let resp = request.query(&params).send().await?;
 		let commit_infos: Vec<JsonValue> = resp.json().await?;
 		Ok(commit_infos.into_iter().map(|v| v.into()).collect())
+	}
+
+	async fn add_repo_collaborator(
+		&self,
+		repo_path: (&str, &str),
+		user_name: &str,
+		permission: Option<CollaboratorPermission>,
+	) -> Result<CollaboratorResult> {
+		let url = format!(
+			"{}/repos/{}/{}/collaborators/{}",
+			API_URL, repo_path.0, repo_path.1, user_name
+		);
+		let request = HTTP_CLIENT.put(url);
+
+		let permission = match permission {
+			Some(permission) => match permission {
+				CollaboratorPermission::Admin => "admin".to_string(),
+				CollaboratorPermission::Push => "push".to_string(),
+				CollaboratorPermission::Pull => "pull".to_string(),
+			},
+			None => "pull".to_string(),
+		};
+
+		let body = if let Some(token) = &self.token {
+			serde_json::json!({
+				"access_token": token.to_string(),
+				"permission": permission,
+			})
+		} else {
+			serde_json::json!({
+				"permission": permission,
+			})
+		};
+
+		let resp = request
+			.header(header::CONTENT_TYPE, "application/json")
+			.body(body.to_string())
+			.send()
+			.await?;
+		let collaborator: JsonValue = resp.json().await?;
+		Ok(collaborator.into())
 	}
 }

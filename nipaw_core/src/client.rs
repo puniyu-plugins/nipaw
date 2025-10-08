@@ -2,6 +2,7 @@ use crate::{
 	Result,
 	option::{CommitListOptions, OrgRepoListOptions, ReposListOptions},
 	types::{
+		collaborator::{CollaboratorPermission, CollaboratorResult},
 		commit::CommitInfo,
 		org::OrgInfo,
 		repo::RepoInfo,
@@ -67,6 +68,10 @@ pub trait Client: Send + Sync {
 	async fn get_org_info(&self, org_name: &str) -> Result<OrgInfo>;
 
 	/// 获取组织仓库信息列表
+	/// # 参数
+	///
+	/// * `org_name` - 组织名
+	/// * `options` - 获取仓库列表选项, 详见 [OrgRepoListOptions]
 	async fn get_org_repos(
 		&self,
 		org_name: &str,
@@ -147,4 +152,19 @@ pub trait Client: Send + Sync {
 		repo_path: (&str, &str),
 		option: Option<CommitListOptions>,
 	) -> Result<Vec<CommitInfo>>;
+
+	/// 添加仓库协作者
+	///
+	/// # 参数
+	///
+	/// * `repo_path` - 仓库路径，格式为 `(owner, repo)`
+	/// * `user_name` - 协作者用户名
+	/// * `permission` - 协作者权限, 默认为 `Pull`, 可选值为 `Admin`, `Push`, `Pull`
+	///
+	async fn add_repo_collaborator(
+		&self,
+		repo_path: (&str, &str),
+		user_name: &str,
+		permission: Option<CollaboratorPermission>,
+	) -> Result<CollaboratorResult>;
 }

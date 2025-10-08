@@ -3,6 +3,7 @@ use crate::{
 	common::RT_RUNTIME,
 	option::{CommitListOptions, OrgRepoListOptions, ReposListOptions},
 	types::{
+		collaborator::{CollaboratorPermission, CollaboratorResult},
 		commit::CommitInfo,
 		org::OrgInfo,
 		repo::RepoInfo,
@@ -231,5 +232,33 @@ impl CnbClient {
 			.get_commit_infos((owner.as_str(), repo.as_str()), option.map(|o| o.into()))
 			.await?;
 		Ok(commit_infos.into_iter().map(|v| v.into()).collect())
+	}
+
+	/// 添加仓库协作者
+	///
+	/// # 参数
+	///
+	/// * `owner` - 仓库所有者
+	/// * `repo` - 仓库名称
+	/// * `user_name` - 协作者用户名
+	/// * `permission` - 协作者权限, 默认为 `Pull`, 可选值为 `Admin`, `Push`, `Pull`
+	///
+	#[napi]
+	pub async fn add_repo_collaborator(
+		&self,
+		owner: String,
+		repo: String,
+		user_name: String,
+		permission: Option<CollaboratorPermission>,
+	) -> Result<CollaboratorResult> {
+		let client = create_client().await;
+		let collaborator_result = client
+			.add_repo_collaborator(
+				(owner.as_str(), repo.as_str()),
+				user_name.as_str(),
+				permission.map(|p| p.into()),
+			)
+			.await?;
+		Ok(collaborator_result.into())
 	}
 }
