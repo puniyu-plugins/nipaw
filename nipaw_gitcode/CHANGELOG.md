@@ -1,5 +1,12 @@
 # 变更日志
 
+## [0.7.0](https://github.com/puniyu-plugins/nipaw/compare/gitcode-v0.6.0...gitcode-v0.7.0) (2025-10-08)
+
+
+### ✨ 新功能
+
+* **core:** 添加仓库协作者功能支持 ([ce87b1c](https://github.com/puniyu-plugins/nipaw/commit/ce87b1cebeb6319096718353082759ca1f0d897b))
+
 ## [0.6.0](https://github.com/puniyu-plugins/nipaw/compare/gitcode-v0.5.0...gitcode-v0.6.0) (2025-10-03)
 
 
