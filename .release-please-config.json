@@ -81,8 +81,15 @@
       "component": "gitcode"
     },
     "nipaw_node": {
-      "release-type": "node",
-      "component": "node"
+      "release-type": "rust",
+      "component": "node",
+      "extra-files": [
+        {
+          "type": "json",
+          "path": "package.json",
+          "jsonpath": "$.version"
+        }
+      ]
     }
   },
   "commit-search-depth": 50
