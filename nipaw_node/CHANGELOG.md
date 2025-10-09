@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.1](https://github.com/puniyu-plugins/nipaw/compare/node-v1.4.0...node-v1.4.1) (2025-10-09)
+
+
+### 🔧 其他更新
+
+* **node:** 更新 nipaw_node 的版本发布配置 ([ffd92c6](https://github.com/puniyu-plugins/nipaw/commit/ffd92c6ffa68c4ae0ddba473388bada1693a921a))
+
 ## [1.4.0](https://github.com/puniyu-plugins/nipaw/compare/node-v1.3.0...node-v1.4.0) (2025-10-08)
 
 
