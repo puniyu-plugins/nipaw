@@ -1,6 +1,12 @@
 {
   "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
-  "release-type": "node",
+  "release-type": "rust",
+  "plugins": [
+    {
+      "type": "cargo-workspace",
+      "updatePeerDependencies": true
+    }
+  ],
   "include-component-in-tag": true,
   "changelog-sections": [
     {
@@ -64,6 +70,10 @@
     }
   ],
   "packages": {
+    "nipaw_core": {
+      "release-type": "rust",
+      "component": "core"
+    },
     "nipaw_cnb": {
       "release-type": "rust",
       "component": "cnb"

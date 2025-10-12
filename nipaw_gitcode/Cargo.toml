@@ -19,4 +19,5 @@ serde.workspace = true
 serde_json.workspace = true
 itertools.workspace = true
 chrono.workspace = true
-nipaw_core.workspace = true
+
+nipaw_core = { path = "../nipaw_core", version = "0.3.4" }
