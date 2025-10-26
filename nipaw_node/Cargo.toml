@@ -8,6 +8,7 @@ homepage.workspace = true
 repository.workspace = true
 edition.workspace = true
 rust-version.workspace = true
+publish = false
 
 
 
@@ -27,6 +28,7 @@ nipaw_github = { path = "../nipaw_github" }
 nipaw_gitee = { path = "../nipaw_gitee" }
 nipaw_gitcode = { path = "../nipaw_gitcode" }
 nipaw_cnb = { path = "../nipaw_cnb" }
+paste = "1.0.15"
 
 
 [build-dependencies]
