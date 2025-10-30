@@ -1,6 +1,6 @@
 use crate::{
-	Result,
 	common::RT_RUNTIME,
+	error,
 	option::{CommitListOptions, OrgRepoListOptions, ReposListOptions},
 	types::{
 		collaborator::{CollaboratorPermission, CollaboratorResult},
@@ -15,6 +15,8 @@ use napi_derive::napi;
 use nipaw_core::Client;
 use paste::paste;
 use std::sync::LazyLock;
+
+type Result<T> = std::result::Result<T, error::Error>;
 
 macro_rules! impl_client {
 	($client_type:ident, $client:ty) => {
@@ -220,11 +222,11 @@ macro_rules! impl_client {
 					&self,
 					owner: String,
 					repo: String,
-					sha: String,
+					sha: Option<String>,
 				) -> Result<CommitInfo> {
 					let client = [<create_client_ $client_type:lower>]().await;
 					let commit_info = client
-						.get_commit_info((owner.as_str(), repo.as_str()), Some(sha.as_str()))
+						.get_commit_info((owner.as_str(), repo.as_str()), sha.as_deref())
 						.await?;
 					Ok(commit_info.into())
 				}
