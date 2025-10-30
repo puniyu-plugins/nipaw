@@ -1,6 +1,6 @@
 [package]
 name = "nipaw_node"
-version = "1.3.0"
+version = "1.4.1"
 authors.workspace = true
 license.workspace = true
 readme.workspace = true
@@ -22,7 +22,7 @@ serde.workspace = true
 chrono.workspace = true
 thiserror.workspace = true
 
-nipaw_core = { path = "../nipaw_core", version = "0.3.4" }
+nipaw_core = { path = "../nipaw_core", version = "0.4.0" }
 
 nipaw_github = { path = "../nipaw_github" }
 nipaw_gitee = { path = "../nipaw_gitee" }

@@ -1,5 +1,19 @@
 # 变更日志
 
+## [0.7.1](https://github.com/puniyu-plugins/nipaw/compare/gitee-v0.7.0...gitee-v0.7.1) (2025-10-30)
+
+
+### 🔧 其他更新
+
+* **release:** 配置 release-please 支持 Rust 项目 ([69873f0](https://github.com/puniyu-plugins/nipaw/commit/69873f0ddc696958d6b4905611fcf155c0feeea8))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * nipaw_core bumped from 0.3.4 to 0.4.0
+
 ## [0.7.0](https://github.com/puniyu-plugins/nipaw/compare/gitee-v0.6.0...gitee-v0.7.0) (2025-10-08)
 
 
