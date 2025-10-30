@@ -1,5 +1,26 @@
 # Changelog
 
+## [1.4.1](https://github.com/puniyu-plugins/nipaw/compare/node-v1.4.0...node-v1.4.1) (2025-10-30)
+
+
+### 🔧 其他更新
+
+* **node:** 更新 nipaw_node 的版本发布配置 ([ffd92c6](https://github.com/puniyu-plugins/nipaw/commit/ffd92c6ffa68c4ae0ddba473388bada1693a921a))
+* **release:** 配置 release-please 支持 Rust 项目 ([69873f0](https://github.com/puniyu-plugins/nipaw/commit/69873f0ddc696958d6b4905611fcf155c0feeea8))
+
+
+### ♻️ 代码重构
+
+* **platform:** 重构平台客户端实现 ([6907f9e](https://github.com/puniyu-plugins/nipaw/commit/6907f9e409da91f2b5b6986bcaa153ba6a72a897))
+* **platform:** 重构平台模块代码结构 ([59c2ca6](https://github.com/puniyu-plugins/nipaw/commit/59c2ca6c6795d7ff686c64a8be86a46b1d461c06))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * nipaw_core bumped from 0.3.4 to 0.4.0
+
 ## [1.4.0](https://github.com/puniyu-plugins/nipaw/compare/node-v1.3.0...node-v1.4.0) (2025-10-08)
 
 
