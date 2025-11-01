@@ -1,5 +1,12 @@
 # 变更日志
 
+## [0.5.0](https://github.com/puniyu-plugins/nipaw/compare/core-v0.4.0...core-v0.5.0) (2025-11-01)
+
+
+### ✨ 新功能
+
+* **core:** 引入仓库可见性枚举并优化认证方式 ([040344d](https://github.com/puniyu-plugins/nipaw/commit/040344d7d44b5cf1f577735e6c4793274af0295a))
+
 ## [0.4.0](https://github.com/puniyu-plugins/nipaw/compare/core-v0.3.4...core-v0.4.0) (2025-10-30)
 
 
