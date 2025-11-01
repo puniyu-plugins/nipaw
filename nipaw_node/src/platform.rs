@@ -155,26 +155,6 @@ macro_rules! impl_client {
 					Ok(repo_info.into())
 				}
 
-				/// 获取仓库默认分支
-				///
-				/// ## 参数
-				/// - `owner` 仓库所有者
-				/// - `repo` 仓库名称
-				/// - `use_web_api` 是否使用WEB API, 默认使用OPEN API获取
-				///
-				#[napi]
-				pub async fn get_repo_default_branch(
-					&self,
-					owner: String,
-					repo: String,
-					use_web_api: Option<bool>,
-				) -> Result<String> {
-					let client = [<create_client_ $client_type:lower>]().await;
-					let default_branch = client
-						.get_repo_default_branch((owner.as_str(), repo.as_str()), use_web_api)
-						.await?;
-					Ok(default_branch)
-				}
 
 				/// 获取指定用户仓库列表
 				///

@@ -167,53 +167,44 @@ impl Client for CnbClient {
 		}
 		let resp = request.send().await?;
 		let mut repo_info: JsonValue = resp.json().await?;
-		let default_branch =
-			self.get_repo_default_branch((repo_path.0, repo_path.1), Some(true)).await?;
+		let is_public = repo_info
+			.0
+			.get("visibility_level")
+			.and_then(|v| v.as_str())
+			.map(|s| s.to_lowercase() == "public")
+			.unwrap_or(false);
+		let default_branch = if is_public {
+			let url = format!(
+				"{}/repos/{}/{}/-/git/overview-branches?limit=5",
+				BASE_URL, repo_path.0, repo_path.1
+			);
+			let request = HTTP_CLIENT.get(url).header("Accept", "application/vnd.cnb.web+json");
+			let resp = request.send().await?;
+			let repo_info: JsonValue = resp.json().await?;
+			repo_info
+				.0
+				.get("default_branch")
+				.and_then(|v| v.get("name"))
+				.and_then(|v| v.as_str())
+				.map(|s| s.trim_start_matches("refs/heads/"))
+				.unwrap()
+				.to_string()
+		} else {
+			let url = format!("{}/repos/{}/{}/-/git/head", API_URL, repo_path.0, repo_path.1);
+			let mut request = HTTP_CLIENT.get(url);
+			if let Some(token) = &self.token {
+				request = request.bearer_auth(token);
+			}
+			let resp = request.send().await?;
+			let repo_info: JsonValue = resp.json().await?;
+			repo_info.0.get("name").and_then(|v| v.as_str()).unwrap().to_string()
+		};
 		repo_info
 			.0
 			.as_object_mut()
 			.unwrap()
 			.insert("default_branch".to_string(), Value::String(default_branch));
 		Ok(repo_info.into())
-	}
-
-	async fn get_repo_default_branch(
-		&self,
-		repo_path: (&str, &str),
-		use_web_api: Option<bool>,
-	) -> Result<String> {
-		match use_web_api {
-			Some(true) => {
-				let url = format!(
-					"{}/repos/{}/{}/-/git/overview-branches?limit=5",
-					BASE_URL, repo_path.0, repo_path.1
-				);
-				let request = HTTP_CLIENT.get(url).header("Accept", "application/vnd.cnb.web+json");
-				let resp = request.send().await?;
-				let repo_info: JsonValue = resp.json().await?;
-				let default_branch = repo_info
-					.0
-					.get("default_branch")
-					.and_then(|v| v.get("name"))
-					.and_then(|v| v.as_str())
-					.map(|s| s.trim_start_matches("refs/heads/"))
-					.unwrap()
-					.to_string();
-				Ok(default_branch)
-			}
-			Some(false) | None => {
-				let url = format!("{}/repos/{}/{}/-/git/head", API_URL, repo_path.0, repo_path.1);
-				let mut request = HTTP_CLIENT.get(url);
-				if let Some(token) = &self.token {
-					request = request.bearer_auth(token);
-				}
-				let resp = request.send().await?;
-				let repo_info: JsonValue = resp.json().await?;
-				let default_branch =
-					repo_info.0.get("name").and_then(|v| v.as_str()).unwrap().to_string();
-				Ok(default_branch)
-			}
-		}
 	}
 
 	async fn get_user_repos(&self, option: Option<ReposListOptions>) -> Result<Vec<RepoInfo>> {

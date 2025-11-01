@@ -93,22 +93,6 @@ pub trait Client: Send + Sync {
 	///
 	async fn get_repo_info(&self, repo_path: (&str, &str)) -> Result<RepoInfo>;
 
-	/// 获取仓库默认分支
-	///
-	/// # 参数
-	///
-	/// * `repo_path` - 仓库路径，格式为 `(owner, repo)`
-	/// * `use_token` - 是否使用token获取仓库默认分支, 默认为 `false`
-	///
-	/// ## 说明
-	/// * 当 `use_token` 为 `true` 时, 会走OPENAPI获取仓库默认分支, 否则走WEBAPI获取仓库默认分支
-	///
-	async fn get_repo_default_branch(
-		&self,
-		repo_path: (&str, &str),
-		use_web_api: Option<bool>,
-	) -> Result<String>;
-
 	/// 获取用户仓库信息列表
 	///
 	/// # 参数
@@ -153,7 +137,7 @@ pub trait Client: Send + Sync {
 		option: Option<CommitListOptions>,
 	) -> Result<Vec<CommitInfo>>;
 
-	/// 添加仓库协作者
+	/// 添加仓库协作者， 如果仓库属于某个组织下的则为外部协作者
 	///
 	/// # 参数
 	///

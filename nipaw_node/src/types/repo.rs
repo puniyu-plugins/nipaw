@@ -1,6 +1,7 @@
 use chrono::{DateTime, Utc};
 use napi_derive::napi;
 use serde::{Deserialize, Serialize};
+use strum::{Display, EnumString, IntoStaticStr};
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
 #[napi(object)]
@@ -15,16 +16,12 @@ pub struct RepoInfo {
 	pub full_name: String,
 	/// 仓库描述
 	pub description: Option<String>,
-	/// 仓库可见性
-	pub visibility: String,
+	/// 仓库可见性, public/private
+	pub visibility: RepoVisibility,
 	/// 是否是fork仓库
 	pub fork: bool,
 	/// 仓库fork数量
 	pub fork_count: u32,
-	/// 是否是公开仓库
-	pub public: bool,
-	/// 是否是私有仓库
-	pub private: bool,
 	/// 仓库语言
 	pub language: Option<String>,
 	/// 仓库星标数量
@@ -47,17 +44,35 @@ impl From<nipaw_core::types::repo::RepoInfo> for RepoInfo {
 			name: repo_info.name,
 			full_name: repo_info.full_name,
 			description: repo_info.description,
-			visibility: repo_info.visibility,
+			visibility: repo_info.visibility.into(),
 			fork: repo_info.fork,
 			fork_count: repo_info.fork_count as u32,
-			public: repo_info.public,
-			private: repo_info.private,
 			language: repo_info.language,
 			star_count: repo_info.star_count as u32,
 			default_branch: repo_info.default_branch,
 			created_at: repo_info.created_at,
 			updated_at: repo_info.updated_at,
 			pushed_at: repo_info.pushed_at,
+		}
+	}
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Display, EnumString, IntoStaticStr)]
+#[napi(string_enum)]
+pub enum RepoVisibility {
+	/// 公开
+	#[serde(rename = "public")]
+	Public,
+	#[serde(rename = "private")]
+	/// 私有
+	Private,
+}
+
+impl From<nipaw_core::types::repo::Visibility> for RepoVisibility {
+	fn from(visibility: nipaw_core::types::repo::Visibility) -> Self {
+		match visibility {
+			nipaw_core::types::repo::Visibility::Public => RepoVisibility::Public,
+			nipaw_core::types::repo::Visibility::Private => RepoVisibility::Private,
 		}
 	}
 }

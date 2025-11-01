@@ -170,51 +170,6 @@ impl Client for GitHubClient {
 		Ok(repo_info.into())
 	}
 
-	async fn get_repo_default_branch(
-		&self,
-		repo_path: (&str, &str),
-		use_web_api: Option<bool>,
-	) -> Result<String> {
-		match use_web_api {
-			Some(true) => {
-				let url = format!("{}/{}/{}/branches/all", BASE_URL, repo_path.0, repo_path.1);
-				let request = HTTP_CLIENT
-					.get(url)
-					.header("X-Requested-With", "XMLHttpRequest")
-					.header("Accept", "application/json");
-				let resp = request.send().await?;
-				let branches_info: JsonValue = resp.json().await?;
-				let default_branch = branches_info
-					.0
-					.get("payload")
-					.and_then(|payload| payload.get("branches"))
-					.and_then(|branches| branches.as_array())
-					.and_then(|branches| {
-						branches.iter().find(|branch| {
-							branch.get("isDefault").and_then(|v| v.as_bool()).unwrap_or(false)
-						})
-					})
-					.and_then(|branch| branch.get("name").and_then(|v| v.as_str()))
-					.map(|s| s.to_string())
-					.unwrap();
-
-				Ok(default_branch)
-			}
-			Some(false) | None => {
-				let url = format!("{}/repos/{}/{}", API_URL, repo_path.0, repo_path.1);
-				let mut request = HTTP_CLIENT.get(url);
-				if let Some(token) = &self.token {
-					request = request.bearer_auth(token);
-				}
-				let resp = request.send().await?;
-				let repo_info: Value = resp.json().await?;
-				let default_branch =
-					repo_info.get("default_branch").and_then(|v| v.as_str()).unwrap().to_string();
-				Ok(default_branch)
-			}
-		}
-	}
-
 	async fn get_user_repos(&self, option: Option<ReposListOptions>) -> Result<Vec<RepoInfo>> {
 		let url = format!("{}/user/repos", API_URL);
 		let mut request = HTTP_CLIENT.get(url);

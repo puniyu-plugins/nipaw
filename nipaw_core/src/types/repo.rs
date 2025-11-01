@@ -1,5 +1,6 @@
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
+use strum::{Display, EnumString, IntoStaticStr};
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct RepoInfo {
@@ -14,15 +15,11 @@ pub struct RepoInfo {
 	/// 仓库描述
 	pub description: Option<String>,
 	/// 仓库可见性
-	pub visibility: String,
+	pub visibility: Visibility,
 	/// 是否是fork仓库
 	pub fork: bool,
 	/// 仓库fork数量
 	pub fork_count: u64,
-	/// 是否是公开仓库
-	pub public: bool,
-	/// 是否是私有仓库
-	pub private: bool,
 	/// 仓库语言
 	pub language: Option<String>,
 	/// 仓库星标数量
@@ -35,4 +32,15 @@ pub struct RepoInfo {
 	pub updated_at: DateTime<Utc>,
 	/// 仓库推送时间
 	pub pushed_at: DateTime<Utc>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Display, EnumString, IntoStaticStr)]
+/// 只有`public`和`private`
+pub enum Visibility {
+	/// 公开
+	#[serde(rename = "public")]
+	Public,
+	#[serde(rename = "private")]
+	/// 私有
+	Private,
 }

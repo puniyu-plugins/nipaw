@@ -1,5 +1,6 @@
 use chrono::{NaiveDate, Utc, Weekday};
 use itertools::Itertools;
+use nipaw_core::types::repo::Visibility;
 use nipaw_core::types::{
 	collaborator::CollaboratorResult,
 	commit::{CommitData, CommitInfo, StatsInfo, UserInfo as CommitUserInfo},
@@ -48,11 +49,9 @@ impl From<JsonValue> for RepoInfo {
 				.get("description")
 				.and_then(|v| v.as_str())
 				.map(|s| s.to_string()),
-			visibility: if is_public { "public".to_string() } else { "private".to_string() },
+			visibility: if is_public { Visibility::Public } else { Visibility::Private },
 			fork: repo_info.get("fork").and_then(|v| v.as_bool()).unwrap_or(false),
 			fork_count: repo_info.get("forks_count").and_then(|v| v.as_u64()).unwrap_or(0),
-			public: is_public,
-			private: !is_public,
 			language: repo_info.get("language").and_then(|v| v.as_str()).map(|s| s.to_string()),
 			star_count: repo_info.get("stargazers_count").and_then(|v| v.as_u64()).unwrap_or(0),
 			default_branch: repo_info
