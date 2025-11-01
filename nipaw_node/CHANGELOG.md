@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.5.0](https://github.com/puniyu-plugins/nipaw/compare/node-v1.4.1...node-v1.5.0) (2025-11-01)
+
+
+### ✨ 新功能
+
+* **core:** 引入仓库可见性枚举并优化认证方式 ([040344d](https://github.com/puniyu-plugins/nipaw/commit/040344d7d44b5cf1f577735e6c4793274af0295a))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * nipaw_core bumped from 0.4.1-alpha.0 to 0.5.0
+
 ## [1.4.1](https://github.com/puniyu-plugins/nipaw/compare/node-v1.4.0...node-v1.4.1) (2025-10-30)
 
 
